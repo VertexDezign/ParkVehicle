@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
     <author>Grisu118 - Vertexdezign</author>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
     <title>
         <en>Park Vehicle</en>
         <de>Parkfunktion für Fahrzeuge</de>
@@ -9,12 +9,13 @@
     <description>
         <en>
             <![CDATA[
-
+You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved!
 ]]>
         </en>
         <de>
             <![CDATA[
-
+Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
+Der Zustand wird gespeichert.
 ]]>
         </de>
     </description>

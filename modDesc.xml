@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="37">
+    <author>Grisu118 - Vertexdezign</author>
+    <version>1.0.0</version>
+    <title>
+        <en>Park Vehicle</en>
+        <de>Parkfunktion für Fahrzeuge</de>
+    </title>
+    <description>
+        <en>
+            <![CDATA[
+
+]]>
+        </en>
+        <de>
+            <![CDATA[
+
+]]>
+        </de>
+    </description>
+    <iconFilename>store.png</iconFilename>
+    <multiplayer supported="true"/>
+    <extraSourceFiles>
+        <sourceFile filename="GrisuDebug.lua"/>
+        <sourceFile filename="addSpecialization.lua"/>
+    </extraSourceFiles>
+
+    <inputBindings>
+        <input name="parkVehicle" category="VEHICLE" key1="KEY_lctrl KEY_t"/>
+    </inputBindings>
+</modDesc>

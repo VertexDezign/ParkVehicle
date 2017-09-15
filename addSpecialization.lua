@@ -23,7 +23,7 @@ addModEventListener(addSpecialization)
 
 function addSpecialization:loadMap(name)
   self.debugger = GrisuDebug:create("addSpecialization ( " .. luaName .. " )")
-  self.debugger:setLogLvl(GrisuDebug.TRACE)
+  self.debugger:setLogLvl(GrisuDebug.INFO)
   if not g_currentMission[luaName .. "Loaded"] then
     if not addSpecialization.isLoaded then
       addSpecialization:add()

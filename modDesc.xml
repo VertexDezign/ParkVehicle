@@ -1,32 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
-    <author>Grisu118 - Vertexdezign</author>
-    <version>0.1.0</version>
-    <title>
-        <en>Park Vehicle</en>
-        <de>Parkfunktion für Fahrzeuge</de>
-    </title>
-    <description>
-        <en>
-            <![CDATA[
+  <author>Grisu118 - Vertexdezign</author>
+  <version>0.1.1</version>
+  <title>
+    <en>Park Vehicle</en>
+    <de>Parkfunktion für Fahrzeuge</de>
+  </title>
+  <description>
+    <en>
+      <![CDATA[
 You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved!
 ]]>
-        </en>
-        <de>
-            <![CDATA[
+    </en>
+    <de>
+      <![CDATA[
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
 Der Zustand wird gespeichert.
 ]]>
-        </de>
-    </description>
-    <iconFilename>store.png</iconFilename>
-    <multiplayer supported="true"/>
-    <extraSourceFiles>
-        <sourceFile filename="GrisuDebug.lua"/>
-        <sourceFile filename="addSpecialization.lua"/>
-    </extraSourceFiles>
+    </de>
+  </description>
+  <iconFilename>store.png</iconFilename>
+  <multiplayer supported="true"/>
+  <extraSourceFiles>
+    <sourceFile filename="GrisuDebug.lua"/>
+    <sourceFile filename="addSpecialization.lua"/>
+  </extraSourceFiles>
 
-    <inputBindings>
-        <input name="parkVehicle" category="VEHICLE" key1="KEY_lctrl KEY_t"/>
-    </inputBindings>
+  <l10n>
+    <text name="parkVehicle">
+      <en>Park vehicle</en>
+      <de>Fahrzeug parken</de>
+    </text>
+  </l10n>
+
+  <inputBindings>
+    <input name="parkVehicle" category="VEHICLE" key1="KEY_lctrl KEY_t"/>
+  </inputBindings>
 </modDesc>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
   <author>Grisu118 - Vertexdezign</author>
-  <version>0.1.1</version>
+  <version>0.2.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -27,7 +27,7 @@ Der Zustand wird gespeichert.
   </extraSourceFiles>
 
   <l10n>
-    <text name="parkVehicle">
+    <text name="input_parkVehicle">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
     </text>

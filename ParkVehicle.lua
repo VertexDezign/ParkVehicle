@@ -8,6 +8,7 @@
 
 ParkVehicle = {}
 ParkVehicle.inputName = "parkVehicle"
+ParkVehicle.modDir = g_currentModDirectory;
 function ParkVehicle:prerequisitesPresent(specializations)
   return true
 end
@@ -17,6 +18,11 @@ function ParkVehicle:load(savegame)
 
   self.vdPV.debugger = GrisuDebug:create("ParkVehicle (" .. tostring(self.configFileName) .. ")")
   self.vdPV.debugger:setLogLvl(GrisuDebug.TRACE)
+  self.vdPV.debugger:debug(function()
+    return "Current Moddir is: " .. ParkVehicle.modDir;
+  end)
+  self.vdPV.icon = createImageOverlay(ParkVehicle.modDir .. "icon.png")
+  self.vdPV.overlay = createImageOverlay(ParkVehicle.modDir .. "overlay.png")
 
   if savegame ~= nil then
     self.nonTabbable = Utils.getNoNil(getXMLBool(savegame.xmlFile, savegame.key .. "#isParked"), false)
@@ -42,8 +48,17 @@ function ParkVehicle:updateTick(dt)
 end
 
 function ParkVehicle:draw()
-  if self.isClient and self:getIsActiveForInput() then
-    g_currentMission:addHelpButtonText("Tabbing: " .. tostring(self.nonTabbable), InputBinding[ParkVehicle.inputName])
+  if self.isClient and self:getIsActive() then
+    local uiScale = g_gameSettings:getValue("uiScale")
+
+    local startX = 1 - 0.164 * uiScale + (0.04 * (uiScale - 0.5))
+    local startY = 0.145 * uiScale - (0.08 * (uiScale - 0.5))
+    local iconWidth = 0.01 * uiScale
+    local iconHeight = iconWidth * g_screenAspectRatio
+    renderOverlay(self.vdPV.icon, startX, startY, iconWidth, iconHeight)
+    if self.nonTabbable then
+      renderOverlay(self.vdPV.overlay, startX, startY, iconWidth, iconHeight)
+    end
   end
 end
 

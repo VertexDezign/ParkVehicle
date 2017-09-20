@@ -17,7 +17,7 @@ function ParkVehicle:load(savegame)
   self.vdPV = {}
 
   self.vdPV.debugger = GrisuDebug:create("ParkVehicle (" .. tostring(self.configFileName) .. ")")
-  self.vdPV.debugger:setLogLvl(GrisuDebug.TRACE)
+  self.vdPV.debugger:setLogLvl(GrisuDebug.INFO)
   self.vdPV.debugger:debug(function()
     return "Current Moddir is: " .. ParkVehicle.modDir;
   end)

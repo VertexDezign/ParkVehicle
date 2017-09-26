@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="37">
   <author>Grisu118 - Vertexdezign</author>
-  <version>0.2.0</version>
+  <version>1.0.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -9,13 +9,15 @@
   <description>
     <en>
       <![CDATA[
-You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved!
+You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved in Singleplayer.
+In Multiplayer the parking state is only set for yourself
 ]]>
     </en>
     <de>
       <![CDATA[
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
-Der Zustand wird gespeichert.
+Der Zustand wird im Einzelspieler Modus gespeichert.
+Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 ]]>
     </de>
   </description>

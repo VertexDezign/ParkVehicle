@@ -39,7 +39,7 @@ function ParkVehicle:keyEvent(unicode, sym, modifier, isDown)
 end
 
 function ParkVehicle:update(dt)
-  if self:getIsActiveForInput() and InputBinding.hasEvent(InputBinding[ParkVehicle.inputName]) then
+  if self:getIsActive() and InputBinding.hasEvent(InputBinding[ParkVehicle.inputName]) then
     self.nonTabbable = not self.nonTabbable
   end
 end

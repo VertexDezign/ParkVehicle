@@ -11,6 +11,9 @@
       <![CDATA[
 You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved in Singleplayer.
 In Multiplayer the parking state is only set for yourself
+
+Changelog:
+1.0.1.0: Fix random activation of park mode.
 ]]>
     </en>
     <de>
@@ -18,6 +21,9 @@ In Multiplayer the parking state is only set for yourself
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
 Der Zustand wird im Einzelspieler Modus gespeichert.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
+
+Changelog:
+1.0.1.0: Behebt zufälliges aktivieren des Park Modus
 ]]>
     </de>
   </description>

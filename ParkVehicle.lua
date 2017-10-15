@@ -1,7 +1,8 @@
 -- ParkVehicle
 --
 -- @author  Grisu118 - VertexDezign.net
--- @history     v1.0    - 2017-09-15 - Initial implementation
+-- @history     v1.0.0.0 - 2017-09-15 - Initial implementation
+--              v1.0.1.0 - 2017-10-15 - Fix random toggle
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: http://grisu118.ch or http://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
@@ -39,7 +40,7 @@ function ParkVehicle:keyEvent(unicode, sym, modifier, isDown)
 end
 
 function ParkVehicle:update(dt)
-  if self:getIsActive() and InputBinding.hasEvent(InputBinding[ParkVehicle.inputName]) then
+  if self:getIsActiveForInput(false, false) and InputBinding.hasEvent(InputBinding[ParkVehicle.inputName]) then
     self.nonTabbable = not self.nonTabbable
   end
 end

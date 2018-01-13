@@ -1,5 +1,7 @@
 # ParkVehicle
 
+[![ModHub Download](https://img.shields.io/badge/ModHub-1.0.1.0-blue.svg?style=flat-square)](https://farming-simulator.com/mod.php?lang=de&country=ch&mod_id=91210&title=fs2017)
+
 A small script, which allows temporary disabling of tabbing function for a vehicle
 
 ## Features

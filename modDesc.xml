@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="37">
+<modDesc descVersion="40">
   <author>Grisu118 - Vertexdezign</author>
-  <version>1.0.1.0</version>
+  <version>2.0.0.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -13,6 +13,7 @@ You can (de)activate the tabbing of the current vehicle with Ctrl + T. The curre
 In Multiplayer the parking state is only set for yourself
 
 Changelog:
+2.0.0.0: FS19
 1.0.1.0: Fix random activation of park mode.
 ]]>
     </en>
@@ -23,6 +24,7 @@ Der Zustand wird im Einzelspieler Modus gespeichert.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 
 Changelog:
+2.0.0.0: FS19
 1.0.1.0: Behebt zufälliges aktivieren des Park Modus
 ]]>
     </de>

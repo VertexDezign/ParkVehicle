@@ -10,15 +10,24 @@
 ParkVehicle = {}
 ParkVehicle.inputName = "parkVehicle"
 ParkVehicle.modDir = g_currentModDirectory;
-function ParkVehicle:prerequisitesPresent(specializations)
-  return true
+
+function ParkVehicle.prerequisitesPresent(specializations)
+  print ("PA present")
+  return SpecializationUtil.hasSpecialization(Drivable, specializations)
 end
 
-function ParkVehicle:load(savegame)
+function ParkVehicle.registerEventListeners(vehicleType)
+  print("PA register")
+  SpecializationUtil.registerEventListener(vehicleType, "onLoad", ParkVehicle)
+  SpecializationUtil.registerEventListener(vehicleType, "onUpdate", ParkVehicle)
+  SpecializationUtil.registerEventListener(vehicleType, "onDraw", ParkVehicle)
+end
+
+function ParkVehicle:onLoad(savegame)
   self.vdPV = {}
 
   self.vdPV.debugger = GrisuDebug:create("ParkVehicle (" .. tostring(self.configFileName) .. ")")
-  self.vdPV.debugger:setLogLvl(GrisuDebug.INFO)
+  self.vdPV.debugger:setLogLvl(GrisuDebug.TRACE)
   self.vdPV.debugger:debug(function()
     return "Current Moddir is: " .. ParkVehicle.modDir;
   end)
@@ -30,25 +39,15 @@ function ParkVehicle:load(savegame)
   end
 end
 
-function ParkVehicle:delete()
-end
-
-function ParkVehicle:mouseEvent(posX, posY, isDown, isUp, button)
-end
-
-function ParkVehicle:keyEvent(unicode, sym, modifier, isDown)
-end
-
-function ParkVehicle:update(dt)
+function ParkVehicle:onUpdate(dt)
+  print("PA:update")
   if self:getIsActiveForInput(false, false) and InputBinding.hasEvent(InputBinding[ParkVehicle.inputName]) then
     self.nonTabbable = not self.nonTabbable
   end
 end
 
-function ParkVehicle:updateTick(dt)
-end
-
-function ParkVehicle:draw()
+function ParkVehicle:onDraw()
+  print("PA:draw")
   if self.isClient and self:getIsActive() then
     local uiScale = g_gameSettings:getValue("uiScale")
 

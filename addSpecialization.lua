@@ -1,149 +1,239 @@
 --
--- add specialization to all mods.
+-- Insert specializations into vehicleType's
 --
 --
--- @author:   Xentro (Marcus@Xentro.se)
+-- @author:    	Xentro (Marcus@Xentro.se)
 -- @website:	www.Xentro.se
--- @history:	v2.00 - 2018-11-17 - FS19
---            v1.53 - 2014-11-11 - Improvement
--- 		    		v1.52 - 2013-10-29 -
+-- @history:	v3.0 - 2018-11-27 - Farming Simulator 19 
 --
 
-local luaName = "ParkVehicle"
+AddSpecialization = {
+	specializationToAdd = {},
+	printHeader 	= "Add Specialization ( %s ) - %s: %s";
+	
+	RES_REQUIRED	= 0,
+	RES_NOT_ALLOWED	= 1,
+	
+	-- Debug text
+	MES_FOUND_REQUIRED 	  = "Found.",
+	MES_FOUND_NOT_ALLOWED = "Aren't allowed.",
+	MES_MISSING 		  = "Missing."
+};
 
-addSpecialization = {}
-addSpecialization.isLoaded = true
-addSpecialization.g_currentModDirectory = g_currentModDirectory
 
-if g_specializationManager:getSpecializationByName(luaName) == nil then
-  g_specializationManager:addSpecialization(luaName, luaName, g_currentModDirectory .. luaName .. ".lua")
-  addSpecialization.isLoaded = false
-end
+function AddSpecialization:loadXMLModDesc()
+	local xmlFile = loadXMLFile("AddSpecializationModDesc", Utils.getFilename("modDesc.xml", g_currentModDirectory));
 
-addModEventListener(addSpecialization)
+	local i = 0;
+	while true do
+		local key = string.format("modDesc.addSpecialization.specialization(%d)", i);
+		if not hasXMLProperty(xmlFile, key) then break; end;
+		
+		local name 			= getXMLString(xmlFile, key .. "#name");
+		local className 	= getXMLString(xmlFile, key .. "#className");
+		local filename 		= getXMLString(xmlFile, key .. "#filename");
+		local l10nNameTag 	= getXMLString(xmlFile, key .. "#l10nNameTag");
+		
+		if name ~= nil and className ~= nil and filename ~= nil then
+			local filename = Utils.getFilename(filename, g_currentModDirectory);
+			
+			if fileExists(filename) then
+				local entry = {
+					name 			 = name,
+					className 		 = className,
+					filename 		 = filename,
+					l10nNameTag 	 = l10nNameTag,
+					debug 	 		 = Utils.getNoNil(getXMLBool(xmlFile, key .. "#debug"), false),
+					vehicleTypeLimit = AddSpecialization:loadXMLTable(xmlFile, key, "vehicleTypeLimit", getXMLBool),
+					restrictions	 = AddSpecialization:loadXMLTable(xmlFile, key, "restrictions", 	getXMLInt),
+					searchWords		 = AddSpecialization:loadXMLTable(xmlFile, key, "searchWords", 		getXMLInt)
+				};
+				
+				table.insert(AddSpecialization.specializationToAdd, entry);
+			else
+				print(string.format(AddSpecialization.printHeader, name, "Info", "File don't exist " .. filename));
+			end;
+		end;
+		
+		i = i + 1;
+	end;
 
-function addSpecialization:loadMap(name)
-  self.debugger = GrisuDebug:create("addSpecialization ( " .. luaName .. " )")
-  self.debugger:setLogLvl(GrisuDebug.WARNING)
-  if not g_currentMission[luaName .. "Loaded"] then
-    if not addSpecialization.isLoaded then
-      addSpecialization:add()
-      addSpecialization.isLoaded = true
-    end
+	delete(xmlFile);
+end;
 
-    g_currentMission[luaName .. "Loaded"] = true
-  else
-    self.debugger:error("The mod have been loaded already! remove one of the copy's")
-  end
-end
+function AddSpecialization:loadXMLTable(xmlFile, k, t, f)
+	local entry = {};
+	local i = 0;
+	while true do
+		local key = string.format(k .. "." .. t .. "(%d)", i);
+		if not hasXMLProperty(xmlFile, key) then break; end;
+		
+		local state = f(xmlFile, key .. "#state");
+		local name  = getXMLString(xmlFile, key .. "#name");
+		
+		if state ~= nil and name ~= nil then
+			if t == "vehicleTypeLimit" then
+				entry[name] = state;
+			else
+				table.insert(entry, {name, state});
+			end;
+		end;
+		
+		i = i + 1;
+	end;
+	
+	return entry;
+end;
 
-function addSpecialization:deleteMap()
-  g_currentMission[luaName .. "Loaded"] = nil
-end
+function AddSpecialization:add()
+	for _, ss in ipairs(AddSpecialization.specializationToAdd) do
+		local currentTypeCount 	= {0, 0}; -- Current, Total
+		local isEmpty 			= true;
+		local passState 		= false;
+		
+		for name, v in pairs(ss.vehicleTypeLimit) do
+			isEmpty = false;
+			
+			if not v then
+				passState = true;  -- If only false then let all types which haven't been setup pass.
+			else
+				passState = false; -- If we got both True/False then only allow those that are set to true.
+				break;
+			end;
+		end;
+		
+		for vehicleType, vehicle in pairs(g_vehicleTypeManager.vehicleTypes) do
+			if vehicle ~= nil then
+				currentTypeCount[2] = currentTypeCount[2] + 1;
+				
+				if (isEmpty 																						-- VehicleType search is empty, let it pass
+				or not passState and ss.vehicleTypeLimit[vehicleType] ~= nil and ss.vehicleTypeLimit[vehicleType]	-- Check True / False state and let pass according
+				or passState and ss.vehicleTypeLimit[vehicleType] ~= nil and ss.vehicleTypeLimit[vehicleType]		-- Only false vehicleType's have been set, let all which aren't set to False pass
+				or passState and ss.vehicleTypeLimit[vehicleType] == nil) then
+					local currentLimitCount = {0, 0}; -- Found, Total
+					local debugMessage 		= {};
+					local forceStop 		= false;
+					
+					for _, r in ipairs(ss.restrictions) do
+						if r[2] == AddSpecialization.RES_REQUIRED then
+							currentLimitCount[2] = currentLimitCount[2] + 1;
+						end;
+						
+						for vs in pairs(vehicle.specializationsByName) do
+							if vs:lower() == r[1]:lower() then
+								if r[2] == AddSpecialization.RES_REQUIRED then
+									currentLimitCount[1] = currentLimitCount[1] + 1;
+									debugMessage[r[1]] = AddSpecialization.MES_FOUND_REQUIRED;
+									
+								elseif r[2] == AddSpecialization.RES_NOT_ALLOWED then
+									debugMessage[r[1]] = AddSpecialization.MES_FOUND_NOT_ALLOWED;
+									forceStop = true;
+								end;
+								
+								break; -- We found our target, stop this loop
+							end;
+						end;
+					end;
+					
+					-- Do name check of specializations
+					if not forceStop then
+						for _, sw in ipairs(ss.searchWords) do
+							if sw[2] == AddSpecialization.RES_REQUIRED then
+								currentLimitCount[2] = currentLimitCount[2] + 1;
+							end;
+							
+							for name in pairs(vehicle.specializationsByName) do
+								if string.find(name:lower(), sw[1]:lower()) ~= nil then
+									if sw[2] == AddSpecialization.RES_REQUIRED then
+										currentLimitCount[1] = currentLimitCount[1] + 1;
+										debugMessage[name] = AddSpecialization.MES_FOUND_REQUIRED;
+									
+									elseif sw[2] == AddSpecialization.RES_NOT_ALLOWED then
+										debugMessage[name] = AddSpecialization.MES_FOUND_NOT_ALLOWED;
+										forceStop = true;
+									end;
+									
+									debugMessage[name] = debugMessage[name] .. " Search Word: " .. sw[1];
+									
+									break;
+								end;
+							end;
+						end;
+					end;
+					
+					-- Do some prints
+					if (currentLimitCount[1] ~= currentLimitCount[2] or forceStop) then
+						if ss.debug then
+							print(string.format(AddSpecialization.printHeader, ss.name, "Info", "Found ( " .. currentLimitCount[1] .. " / " .. currentLimitCount[2] .. " ) of the required specialization's in " .. vehicleType));
+							print(string.format(AddSpecialization.printHeader, ss.name, "Info", "List of specialization's"));
+							
+							if currentLimitCount[1] ~= currentLimitCount[2] then
+								for _, r in ipairs(ss.restrictions) do
+									if debugMessage[r[1]] == nil and r[1] ~= ss.name then
+										print(string.format(AddSpecialization.printHeader, ss.name, "Info", r[1] .. " " .. AddSpecialization.MES_MISSING));
+									end;
+								end;
+							end;
+							
+							for name, t in pairs(debugMessage) do
+								print(string.format(AddSpecialization.printHeader, ss.name, "Info", name .. " " .. t));
+							end;
+						end;
+						
+						forceStop = true;
+					end;
+					
+					-- We passed the checks, add script
+					if not forceStop then
+						local obj = g_specializationManager:getSpecializationObjectByName(ss.name);
+						
+						vehicle.specializationsByName[ss.name] = obj;
+						table.insert(vehicle.specializationNames, ss.name);
+						table.insert(vehicle.specializations, obj);
+						
+						currentTypeCount[1] = currentTypeCount[1] + 1;
+						
+						if ss.debug then
+							print(string.format(AddSpecialization.printHeader, ss.name, "Info", "Inserted on " .. vehicleType));
+						end;
+					end;
+				end;
+			end;
+		end;
+		
+		print(string.format(AddSpecialization.printHeader, ss.name, "Info", "We have successfully added specialization Into ( " .. currentTypeCount[1] .. " / " .. currentTypeCount[2] .. ") of the vehicleTypes."));
+		
+		-- make l10n global 
+		local i = 1;
+		while true do
+			local txt = string.format(ss.l10nNameTag .. "_%d", i);
+			
+			if not g_i18n:hasText(txt) then
+				break;
+			end;
+			
+			g_i18n.texts[txt] = g_i18n:getText(txt);
+			
+			i = i + 1;
+		end;
+	end;
+end;
 
-function addSpecialization:mouseEvent(posX, posY, isDown, isUp, button)
-end
+-- This can be replaced with an table too if that is much more preferred.
+AddSpecialization:loadXMLModDesc();
 
-function addSpecialization:keyEvent(unicode, sym, modifier, isDown)
-end
 
-function addSpecialization:update(dt)
-end
-
-function addSpecialization:draw()
-end
-
-function addSpecialization:add()
-  self.debugger:trace("add()")
-  local searchWords = { luaName }
-  local searchSpecializations = { { luaName, false }, { "drivable", true } } -- only globally accessible scripts. (steerable, fillable etc.)
-
-  for k, vehicle in pairs(g_vehicleTypeManager:getVehicleTypes()) do
-    local locationAllowed, specialization
-
-    for _, s in ipairs(searchSpecializations) do s[3] = false end
-
-    for _, vs in ipairs(vehicle.specializationNames) do
-      
-      for _, s in ipairs(searchSpecializations) do
-        if vs == s[1] then
-          if s[2] then
-            locationAllowed = "allowed"
-            s[3] = true
-          else
-            locationAllowed = "has"
-            specialization = s[1]
-            break
-          end
-        end
-      end
-
-      if locationAllowed ~= nil and locationAllowed ~= "allowed" then
-        break
-      end
-    end
-
-    if locationAllowed == nil then
-      locationAllowed = "allowed"
-    end
-
-    for _, s in ipairs(searchSpecializations) do
-      if s[2] then
-        if s[3] ~= true then
-          locationAllowed = "missing"
-          specialization = s[1]
-          break
-        end
-      end
-    end
-
-    if locationAllowed == "allowed" then
-      local addSpec
-      local modName = StringUtil.splitString(".", k)
-      local spec = {}
-
-      for name in pairs(g_specializationManager.specializations) do
-        if string.find(name, modName[1]) ~= nil then
-          local parts = StringUtil.splitString(".", name)
-
-          if table.getn(parts) > 1 then
-            table.insert(spec, parts)
-          end
-        end
-      end
-
-      for _, s in ipairs(spec) do
-        for _, search in ipairs(searchWords) do
-          if string.find(string.lower(s[2]), string.lower(search)) ~= nil then
-            addSpec = s[2]
-            break
-          end
-        end
-
-        if addSpec ~= nil then
-          break
-        end
-      end
-
-      if addSpec == nil then
-        g_vehicleTypeManager:addSpecialization(k, "FS19_parkVehicle" .. "." .. luaName)
-        self.debugger:trace(function()
-          return "Inserted on " .. k
-        end)
-      else
-        self.debugger:info(function()
-          return "Failed inserting on " .. k .. " as it has the specialization (" .. addSpec .. ")"
-        end)
-      end
-    elseif locationAllowed == "has" then
-      self.debugger:info(function()
-        return "Failed inserting on " .. k .. " as it has the specialization (" .. specialization .. ")"
-      end)
-    else
-      self.debugger:info(function()
-        return "Failed inserting on " .. k .. " as its missing specialization " .. specialization
-      end)
-    end
-  end
-end
-
+for i, ss in ipairs(AddSpecialization.specializationToAdd) do
+	-- Add specialization name to not allowed
+	table.insert(ss.restrictions, {ss.name, AddSpecialization.RES_NOT_ALLOWED});
+	table.insert(ss.searchWords,  {ss.name, AddSpecialization.RES_NOT_ALLOWED});
+	
+	if g_specializationManager:getSpecializationByName(ss.name) == nil then
+		g_specializationManager:addSpecialization(ss.name, ss.className, ss.filename, true, nil);
+		
+		-- Key functions are called early so we need to add the specialization before it gets to that stage.
+		AddSpecialization:add();
+	else
+		print(string.format(AddSpecialization.printHeader, ss.name, "Error", "Specialization have been loaded already by another mod! This process will stop now."));
+	end;
+end;

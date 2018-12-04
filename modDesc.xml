@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="40">
+<modDesc descVersion="41">
   <author>Grisu118 - Vertexdezign</author>
   <version>2.0.0.0</version>
   <title>
@@ -33,17 +33,31 @@ Changelog:
   <multiplayer supported="true"/>
   <extraSourceFiles>
     <sourceFile filename="GrisuDebug.lua"/>
-    <sourceFile filename="addSpecialization.lua"/>
+    <sourceFile filename="AddSpecialization.lua"/>
   </extraSourceFiles>
 
+  <addSpecialization>
+    <specialization name="ParkVehicle" className="ParkVehicle" filename="ParkVehicle.lua" l10nNameTag="PARKVEHICLE" debug="false">
+      <!-- <vehicleTypeLimit state="true" name="drivable" /> -->
+      <restrictions state="0" name="drivable" />
+      <!-- <searchWords state="1" name="spec" /> -->
+    </specialization>
+  </addSpecialization>
+
   <l10n>
-    <text name="input_parkVehicle">
+    <text name="PARKVEHICLE">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
     </text>
   </l10n>
 
-  <inputBindings>
-    <input name="parkVehicle" category="VEHICLE" key1="KEY_lctrl KEY_t"/>
-  </inputBindings>
+  <actions>
+    <action name="PARKVEHICLE" category="VEHICLE"/>
+  </actions>
+
+  <inputBinding>
+    <actionBinding action="PARKVEHICLE">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
+    </actionBinding>
+  </inputBinding>
 </modDesc>

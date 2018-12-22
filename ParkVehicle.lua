@@ -70,11 +70,9 @@ function ParkVehicle:onRegisterActionEvents(isActiveForInput)
     self:clearActionEventsTable(spec.actionEvents)
 
     if self:getIsActiveForInput(true) then
-      local _, actionEventId = self:addActionEvent(spec.actionEvents, "PARKVEHICLE", self, ParkVehicle.actionEventParkVehicle, false, true, false, true, nil)
+      local _, actionEventId = self:addActionEvent(spec.actionEvents, "PARKVEHICLE_01", self, ParkVehicle.actionEventParkVehicle, false, true, false, true, nil)
 
-      g_inputBinding:setActionEventTextPriority(actionEventId, GS_PRIO_VERY_HIGH)
-      g_inputBinding:setActionEventActive(actionEventId, true)
-      g_inputBinding:setActionEventText(actionEventId, g_i18n:getText("PARKVEHICLE"))
+      g_inputBinding:setActionEventTextPriority(actionEventId, GS_PRIO_VERY_LOW)
     end
   end
 end

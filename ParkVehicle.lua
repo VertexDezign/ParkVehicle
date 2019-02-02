@@ -58,20 +58,16 @@ function ParkVehicle:onLoad(savegame)
 
   spec.state = {}
 
-  print("userId", spec.uniqueUserId)
-
   local isEmpty = true
   if savegame ~= nil then
     local i = 0
     while true do
       local key = string.format("%s.ParkVehicle.player(%d)", savegame.key, i)
-      print ("key", key)
       if not hasXMLProperty(savegame.xmlFile, key) then
         break
       end
       local id = getXMLString(savegame.xmlFile, key .. "#id")
       local value = getXMLBool(savegame.xmlFile, key .. "#isParked")
-      print("save", id, value)
       if id ~= nil and value ~= nil then
         spec.state[id] = value
         isEmpty = false
@@ -81,7 +77,6 @@ function ParkVehicle:onLoad(savegame)
   end
 
   if isEmpty or spec.state[spec.uniqueUserId] == nil then
-    print("empty")
     spec.state[spec.uniqueUserId] = false
   end
 
@@ -122,12 +117,10 @@ end
 -- @param integer connection connection
 function ParkVehicle:onWriteStream(streamId, connection)
   local spec = self.spec_parkvehicle
-  print("onWrite")
   local count = 0
   for k in pairs(spec.state) do
     count = count + 1
   end
-  print("Sending " .. tostring(count))
   streamWriteInt32(streamId, count)
   for k, v in pairs(spec.state) do
     streamWriteString(streamId, k)
@@ -140,10 +133,8 @@ end
 -- @param integer connection connection
 function ParkVehicle:onReadStream(streamId, connection)
   local spec = self.spec_parkvehicle
-  print("onRead")
   local state = {}
   local count = streamReadInt32(streamId)
-  print("Received " .. tostring(count))
   local i = 0
   while i < count do
     local id = streamReadString(streamId)
@@ -161,7 +152,6 @@ function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
   if connection:getIsServer() then
     local spec = self.spec_parkvehicle
     if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlag) ~= 0) then
-      print("wroteUpdate")
       streamWriteString(streamId, spec.uniqueUserId)
       streamWriteBool(streamId, spec.state[spec.uniqueUserId])
     end
@@ -180,7 +170,6 @@ function ParkVehicle:onReadUpdateStream(streamId, timestamp, connection)
       spec.state[id] = value
     end
   end
-  -- print("readUpdate")
 end
 
 function ParkVehicle:onRegisterActionEvents(isActiveForInput)

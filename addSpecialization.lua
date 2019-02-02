@@ -4,7 +4,8 @@
 --
 -- @author:    	Xentro (Marcus@Xentro.se)
 -- @website:	www.Xentro.se
--- @history:	v3.0 - 2018-11-27 - Farming Simulator 19 
+-- @history:	v3.1 - 2019-01-20 - Allowed specializations 
+-- 				v3.0 - 2018-11-27 - Farming Simulator 19 
 --
 
 AddSpecialization = {
@@ -13,9 +14,10 @@ AddSpecialization = {
 	
 	RES_REQUIRED	= 0,
 	RES_NOT_ALLOWED	= 1,
+	RES_ALLOWED		= 2,
 	
 	-- Debug text
-	MES_FOUND_REQUIRED 	  = "Found.",
+	MES_FOUND_REQUIRED 	  = "Found Required.",
 	MES_FOUND_NOT_ALLOWED = "Aren't allowed.",
 	MES_MISSING 		  = "Missing."
 };
@@ -85,6 +87,39 @@ function AddSpecialization:loadXMLTable(xmlFile, k, t, f)
 	return entry;
 end;
 
+function AddSpecialization:checkTable(t, state, vehicle, currentLimitCount, debugMessage, forceStop, allowedState)
+	for _, r in ipairs(t) do
+		if r[2] == AddSpecialization.RES_REQUIRED then
+			currentLimitCount[2] = currentLimitCount[2] + 1;
+		elseif r[2] == AddSpecialization.RES_ALLOWED then
+			allowedState = true;
+		end;
+		
+		for name in pairs(vehicle.specializationsByName) do
+			if string.find(name:lower(), r[1]:lower()) ~= nil then
+				if r[2] == AddSpecialization.RES_REQUIRED then
+					currentLimitCount[1] = currentLimitCount[1] + 1;
+					debugMessage[r[1]] = AddSpecialization.MES_FOUND_REQUIRED;
+					
+				elseif r[2] == AddSpecialization.RES_NOT_ALLOWED then
+					forceStop = true;
+					debugMessage[r[1]] = AddSpecialization.MES_FOUND_NOT_ALLOWED;
+				elseif r[2] == AddSpecialization.RES_ALLOWED then
+					currentLimitCount[3] = currentLimitCount[3] + 1;
+				end;
+				
+				if state == 1 then
+					debugMessage[name] = debugMessage[name] .. " Search Word: " .. r[1];
+				end;
+				
+				break; -- We found our target, stop this loop
+			end;
+		end;
+	end;
+	
+	return currentLimitCount, debugMessage, forceStop, allowedState;
+end;
+
 function AddSpecialization:add()
 	for _, ss in ipairs(AddSpecialization.specializationToAdd) do
 		local currentTypeCount 	= {0, 0}; -- Current, Total
@@ -110,64 +145,26 @@ function AddSpecialization:add()
 				or not passState and ss.vehicleTypeLimit[vehicleType] ~= nil and ss.vehicleTypeLimit[vehicleType]	-- Check True / False state and let pass according
 				or passState and ss.vehicleTypeLimit[vehicleType] ~= nil and ss.vehicleTypeLimit[vehicleType]		-- Only false vehicleType's have been set, let all which aren't set to False pass
 				or passState and ss.vehicleTypeLimit[vehicleType] == nil) then
-					local currentLimitCount = {0, 0}; -- Found, Total
+					local currentLimitCount = {0, 0, 0}; -- Found, Total, Found Allowed
 					local debugMessage 		= {};
 					local forceStop 		= false;
+					local allowedState 		= false;
 					
-					for _, r in ipairs(ss.restrictions) do
-						if r[2] == AddSpecialization.RES_REQUIRED then
-							currentLimitCount[2] = currentLimitCount[2] + 1;
-						end;
-						
-						for vs in pairs(vehicle.specializationsByName) do
-							if vs:lower() == r[1]:lower() then
-								if r[2] == AddSpecialization.RES_REQUIRED then
-									currentLimitCount[1] = currentLimitCount[1] + 1;
-									debugMessage[r[1]] = AddSpecialization.MES_FOUND_REQUIRED;
-									
-								elseif r[2] == AddSpecialization.RES_NOT_ALLOWED then
-									debugMessage[r[1]] = AddSpecialization.MES_FOUND_NOT_ALLOWED;
-									forceStop = true;
-								end;
-								
-								break; -- We found our target, stop this loop
-							end;
-						end;
-					end;
-					
-					-- Do name check of specializations
+					currentLimitCount, debugMessage, forceStop, allowedState = self:checkTable(ss.restrictions, 0, vehicle, currentLimitCount, debugMessage, forceStop, allowedState);
 					if not forceStop then
-						for _, sw in ipairs(ss.searchWords) do
-							if sw[2] == AddSpecialization.RES_REQUIRED then
-								currentLimitCount[2] = currentLimitCount[2] + 1;
-							end;
-							
-							for name in pairs(vehicle.specializationsByName) do
-								if string.find(name:lower(), sw[1]:lower()) ~= nil then
-									if sw[2] == AddSpecialization.RES_REQUIRED then
-										currentLimitCount[1] = currentLimitCount[1] + 1;
-										debugMessage[name] = AddSpecialization.MES_FOUND_REQUIRED;
-									
-									elseif sw[2] == AddSpecialization.RES_NOT_ALLOWED then
-										debugMessage[name] = AddSpecialization.MES_FOUND_NOT_ALLOWED;
-										forceStop = true;
-									end;
-									
-									debugMessage[name] = debugMessage[name] .. " Search Word: " .. sw[1];
-									
-									break;
-								end;
-							end;
-						end;
+						currentLimitCount, debugMessage, forceStop, allowedState = self:checkTable(ss.searchWords, 1, vehicle, currentLimitCount, debugMessage, forceStop, allowedState);
 					end;
 					
 					-- Do some prints
-					if (currentLimitCount[1] ~= currentLimitCount[2] or forceStop) then
+					if (currentLimitCount[1] ~= currentLimitCount[2] or forceStop or allowedState and currentLimitCount[3] == 0) then
 						if ss.debug then
-							print(string.format(AddSpecialization.printHeader, ss.name, "Info", "Found ( " .. currentLimitCount[1] .. " / " .. currentLimitCount[2] .. " ) of the required specialization's in " .. vehicleType));
-							print(string.format(AddSpecialization.printHeader, ss.name, "Info", "List of specialization's"));
+							if currentLimitCount[2] > 0 then
+								print(string.format(AddSpecialization.printHeader, ss.name, "Info", "Found ( " .. currentLimitCount[1] .. " / " .. currentLimitCount[2] .. " ) of the required specialization's in " .. vehicleType));
+							end;
 							
 							if currentLimitCount[1] ~= currentLimitCount[2] then
+								print(string.format(AddSpecialization.printHeader, ss.name, "Info", "List of specialization's"));
+								
 								for _, r in ipairs(ss.restrictions) do
 									if debugMessage[r[1]] == nil and r[1] ~= ss.name then
 										print(string.format(AddSpecialization.printHeader, ss.name, "Info", r[1] .. " " .. AddSpecialization.MES_MISSING));

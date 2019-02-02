@@ -24,7 +24,6 @@ Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
   <iconFilename>store.png</iconFilename>
   <multiplayer supported="true"/>
   <extraSourceFiles>
-    <sourceFile filename="GrisuDebug.lua"/>
     <sourceFile filename="AddSpecialization.lua"/>
   </extraSourceFiles>
 

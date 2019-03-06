@@ -1,7 +1,7 @@
 #!/bin/sh
 
-ZIPNAME="FS17_parkVehicle.zip"
-MOD_DIR="C:\Users\benjamin\Documents\My Games\FarmingSimulator2017\mods"
+ZIPNAME="FS19_parkVehicle.zip"
+MOD_DIR="C:\Users\benjamin\Documents\My Games\FarmingSimulator2019\mods"
 
 if [ -f $ZIPNAME ]; then
     echo "Remove old zip"

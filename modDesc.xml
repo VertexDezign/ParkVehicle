@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="37">
-  <author>Grisu118 - Vertexdezign</author>
-  <version>1.0.1.0</version>
+<modDesc descVersion="42">
+  <author>VertexDezign</author>
+  <version>1.0.0.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -9,39 +9,49 @@
   <description>
     <en>
       <![CDATA[
-You can (de)activate the tabbing of the current vehicle with Ctrl + T. The current parking state is saved in Singleplayer.
-In Multiplayer the parking state is only set for yourself
-
-Changelog:
-1.0.1.0: Fix random activation of park mode.
+You can (de)activate the tabbing of the current vehicle with Ctrl + T.
+In Multiplayer the parking state is only set for yourself.
+The state is saved in single player and in multiplayer.
 ]]>
     </en>
     <de>
       <![CDATA[
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
-Der Zustand wird im Einzelspieler Modus gespeichert.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
-
-Changelog:
-1.0.1.0: Behebt zufälliges aktivieren des Park Modus
+Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
 ]]>
     </de>
   </description>
   <iconFilename>store.png</iconFilename>
   <multiplayer supported="true"/>
   <extraSourceFiles>
-    <sourceFile filename="GrisuDebug.lua"/>
-    <sourceFile filename="addSpecialization.lua"/>
+    <sourceFile filename="AddSpecialization.lua"/>
   </extraSourceFiles>
 
+  <addSpecialization>
+    <specialization name="ParkVehicle" className="ParkVehicle" filename="ParkVehicle.lua" l10nNameTag="PARKVEHICLE" debug="false">
+      <restrictions state="0" name="drivable" />
+    </specialization>
+  </addSpecialization>
+
   <l10n>
-    <text name="input_parkVehicle">
+    <text name="input_PARKVEHICLE_01">
+      <en>Park vehicle</en>
+      <de>Fahrzeug parken</de>
+    </text>
+    <text name="PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
     </text>
   </l10n>
 
-  <inputBindings>
-    <input name="parkVehicle" category="VEHICLE" key1="KEY_lctrl KEY_t"/>
-  </inputBindings>
+  <actions>
+    <action name="PARKVEHICLE_01" category="VEHICLE"/>
+  </actions>
+
+  <inputBinding>
+    <actionBinding action="PARKVEHICLE_01">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
+    </actionBinding>
+  </inputBinding>
 </modDesc>

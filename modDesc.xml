@@ -31,6 +31,8 @@ Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
   <addSpecialization>
     <specialization name="ParkVehicle" className="ParkVehicle" filename="ParkVehicle.lua" l10nNameTag="PARKVEHICLE" debug="false">
       <restrictions state="0" name="drivable" />
+      <restrictions state="1" name="cctdrivable" />
+      <restrictions state="1" name="rideable" />
     </specialization>
   </addSpecialization>
 

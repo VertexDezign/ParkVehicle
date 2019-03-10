@@ -12,6 +12,10 @@
 You can (de)activate the tabbing of the current vehicle with Ctrl + T.
 In Multiplayer the parking state is only set for yourself.
 The state is saved in single player and in multiplayer.
+
+Changelog:
+1.0.1.0:
+- Fix bug with horses
 ]]>
     </en>
     <de>
@@ -19,6 +23,10 @@ The state is saved in single player and in multiplayer.
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
+
+Changelog
+1.0.1.0:
+- Fehler mit Pferden behoben
 ]]>
     </de>
   </description>

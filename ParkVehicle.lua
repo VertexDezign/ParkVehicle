@@ -32,10 +32,12 @@ function ParkVehicle:onLoad(savegame)
   local spec = self.spec_parkvehicle
 
   if g_dedicatedServerInfo == nil then
-    local xmlFile = getUserProfileAppPath() .. "modsSettings/parkVehicle.xml"
+    local modSettingsDir = getUserProfileAppPath() .. "modsSettings"
+    local xmlFile = modSettingsDir .. "/parkVehicle.xml"
     local id = nil
     if not fileExists(xmlFile) then
-    local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
+      createFolder(modSettingsDir)
+      local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
       id = ParkVehicle.randomString(25)
       setXMLString(xml, "ParkVehicle#uniqueUserId", id)
       saveXMLFile(xml)

@@ -13,7 +13,7 @@ ParkVehicle.inputName = "parkVehicle"
 ParkVehicle.modDir = g_currentModDirectory
 
 function ParkVehicle.prerequisitesPresent(specializations)
-  return SpecializationUtil.hasSpecialization(Drivable, specializations)
+  return SpecializationUtil.hasSpecialization(Enterable, specializations)
 end
 
 function ParkVehicle.registerEventListeners(vehicleType)

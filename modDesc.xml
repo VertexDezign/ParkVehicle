@@ -33,13 +33,12 @@ Changelog
   <iconFilename>store.png</iconFilename>
   <multiplayer supported="true"/>
   <extraSourceFiles>
-    <sourceFile filename="AddSpecialization.lua"/>
+    <sourceFile filename="addSpecialization.lua"/>
   </extraSourceFiles>
 
   <addSpecialization>
     <specialization name="ParkVehicle" className="ParkVehicle" filename="ParkVehicle.lua" l10nNameTag="PARKVEHICLE" debug="false">
-      <restrictions state="0" name="drivable" />
-      <restrictions state="1" name="cctdrivable" />
+      <restrictions state="0" name="enterable" />
       <restrictions state="1" name="rideable" />
     </specialization>
   </addSpecialization>

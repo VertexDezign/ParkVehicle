@@ -27,7 +27,8 @@ Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So könne
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
 
-Changelog1.1.0.0:
+Changelog:
+1.1.0.0:
 - Unterstützung for alle Fahrzeuge mit der Speci "enterable"
 - modSettings Ordner wird erstellt, falls er noch nicht existiert
 1.0.1.0:

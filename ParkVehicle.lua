@@ -4,6 +4,7 @@
 -- @history     v1.0.0.0 - 2017-09-15 - Initial implementation
 --              v1.0.1.0 - 2017-10-15 - Fix random toggle
 --              v2.0.0.0 - 2018-12-03 - FS19
+--              v2.1.0.0 - 2019-04-01 - Support all enterable vehicles, create modSettings folder
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: https://grisu118.ch or https://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
@@ -13,7 +14,7 @@ ParkVehicle.inputName = "parkVehicle"
 ParkVehicle.modDir = g_currentModDirectory
 
 function ParkVehicle.prerequisitesPresent(specializations)
-  return SpecializationUtil.hasSpecialization(Drivable, specializations)
+  return SpecializationUtil.hasSpecialization(Enterable, specializations)
 end
 
 function ParkVehicle.registerEventListeners(vehicleType)
@@ -32,10 +33,12 @@ function ParkVehicle:onLoad(savegame)
   local spec = self.spec_parkvehicle
 
   if g_dedicatedServerInfo == nil then
-    local xmlFile = getUserProfileAppPath() .. "modsSettings/parkVehicle.xml"
+    local modSettingsDir = getUserProfileAppPath() .. "modsSettings"
+    local xmlFile = modSettingsDir .. "/parkVehicle.xml"
     local id = nil
     if not fileExists(xmlFile) then
-    local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
+      createFolder(modSettingsDir)
+      local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
       id = ParkVehicle.randomString(25)
       setXMLString(xml, "ParkVehicle#uniqueUserId", id)
       saveXMLFile(xml)

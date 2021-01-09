@@ -24,7 +24,7 @@ AddSpecialization = {
 
 
 function AddSpecialization:loadXMLModDesc()
-	local xmlFile = loadXMLFile("AddSpecializationModDesc", Utils.getFilename("modDesc.xml", g_currentModDirectory));
+	local xmlFile = loadXMLFile("AddSpecializationModDesc", g_currentModDirectory.."modDesc.xml", g_currentModDirectory);
 
 	local i = 0;
 	while true do

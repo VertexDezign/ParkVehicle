@@ -136,8 +136,9 @@ function AddSpecialization:add()
 				break;
 			end;
 		end;
+
 		
-		for vehicleType, vehicle in pairs(g_vehicleTypeManager.vehicleTypes) do
+		for vehicleType, vehicle in pairs(g_vehicleTypeManager:getTypes()) do
 			if vehicle ~= nil then
 				currentTypeCount[2] = currentTypeCount[2] + 1;
 				

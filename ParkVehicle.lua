@@ -5,6 +5,7 @@
 --              v1.0.1.0 - 2017-10-15 - Fix random toggle
 --              v2.0.0.0 - 2018-12-03 - FS19
 --              v2.1.0.0 - 2019-04-01 - Support all enterable vehicles, create modSettings folder
+--              v3.0.0.0 - 2021-11-19 - FS22
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: https://grisu118.ch or https://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
@@ -33,7 +34,7 @@ function ParkVehicle:onLoad(savegame)
   local spec = self.spec_parkvehicle
 
   if g_dedicatedServerInfo == nil then
-    local modSettingsDir = getUserProfileAppPath() .. "modsSettings"
+    local modSettingsDir = getUserProfileAppPath() .. "modSettings"
     local xmlFile = modSettingsDir .. "/parkVehicle.xml"
     local id = nil
     if not fileExists(xmlFile) then
@@ -66,11 +67,11 @@ function ParkVehicle:onLoad(savegame)
     local i = 0
     while true do
       local key = string.format("%s.ParkVehicle.player(%d)", savegame.key, i)
-      if not hasXMLProperty(savegame.xmlFile, key) then
+      if not hasXMLProperty(savegame.xmlFile.handle, key) then
         break
       end
-      local id = getXMLString(savegame.xmlFile, key .. "#id")
-      local value = getXMLBool(savegame.xmlFile, key .. "#isParked")
+      local id = getXMLString(savegame.xmlFile.handle, key .. "#id")
+      local value = getXMLBool(savegame.xmlFile.handle, key .. "#isParked")
       if id ~= nil and value ~= nil then
         spec.state[id] = value
         isEmpty = false
@@ -104,8 +105,8 @@ function ParkVehicle:onDraw()
     local spec = self.spec_parkvehicle
     local uiScale = g_gameSettings:getValue("uiScale")
 
-    local startX = 1 - 0.064 * uiScale + (0.04 * (uiScale - 0.5))
-    local startY = 0.145 * uiScale - (0.08 * (uiScale - 0.5))
+    local startX = 1 - 0.0755 * uiScale + (0.04 * (uiScale - 0.5))
+    local startY = 0.05 * uiScale - (0.08 * (uiScale - 0.5))
     local iconWidth = 0.01 * uiScale
     local iconHeight = iconWidth * g_screenAspectRatio
     renderOverlay(spec.icon, startX, startY, iconWidth, iconHeight)
@@ -208,8 +209,8 @@ function ParkVehicle:saveToXMLFile(xmlFile, path)
   local spec = self.spec_parkvehicle
   local i = 0
   for id, value in pairs(spec.state) do
-    setXMLString(xmlFile, string.format("%s.player(%d)#id", path, i), id)
-    setXMLBool(xmlFile, string.format("%s.player(%d)#isParked", path, i), value)
+    setXMLString(xmlFile.handle, string.format("%s.player(%d)#id", path, i), id)
+    setXMLBool(xmlFile.handle, string.format("%s.player(%d)#isParked", path, i), value)
     i = i + 1
   end
 end

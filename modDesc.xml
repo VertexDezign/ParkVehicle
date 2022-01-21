@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="43">
+<modDesc descVersion="61">
   <author>VertexDezign</author>
-  <version>1.1.0.0</version>
+  <version>1.0.0.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -12,13 +12,6 @@
 You can (de)activate the tabbing of the current vehicle with Ctrl + T.
 In Multiplayer the parking state is only set for yourself.
 The state is saved in single player and in multiplayer.
-
-Changelog:
-1.1.0.0:
-- Support all enterable vehicles
-- Create modSettings folder in script
-1.0.1.0:
-- Fix bug with horses
 ]]>
     </en>
     <de>
@@ -26,13 +19,6 @@ Changelog:
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
-
-Changelog:
-1.1.0.0:
-- Unterstützung for alle Fahrzeuge mit der Speci "enterable"
-- modSettings Ordner wird erstellt, falls er noch nicht existiert
-1.0.1.0:
-- Fehler mit Pferden behoben
 ]]>
     </de>
   </description>

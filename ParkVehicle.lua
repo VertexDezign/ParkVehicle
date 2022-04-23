@@ -6,16 +6,23 @@
 --              v2.0.0.0 - 2018-12-03 - FS19
 --              v2.1.0.0 - 2019-04-01 - Support all enterable vehicles, create modSettings folder
 --              v3.0.0.0 - 2021-11-19 - FS22
+--              v3.1.0.0 - 2022-04-23 - Add possibiltiy to unpark all, fix issue with registration in loader
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: https://grisu118.ch or https://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
 
+---@class ParkVehicle
 ParkVehicle = {}
 ParkVehicle.inputName = "parkVehicle"
 ParkVehicle.modDir = g_parkVehicleSystem.modDir
 
 function ParkVehicle.prerequisitesPresent(specializations)
   return SpecializationUtil.hasSpecialization(Enterable, specializations)
+end
+
+function ParkVehicle.registerFunctions(vehicleType)
+  SpecializationUtil.registerFunction(vehicleType, "getParkVehicleState", ParkVehicle.getParkVehicleState)
+  SpecializationUtil.registerFunction(vehicleType, "setParkVehicleState", ParkVehicle.setParkVehicleState)
 end
 
 function ParkVehicle.registerEventListeners(vehicleType)
@@ -27,6 +34,7 @@ function ParkVehicle.registerEventListeners(vehicleType)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onRegisterActionEvents", ParkVehicle)
+  SpecializationUtil.registerEventListener(vehicleType, "onDelete", ParkVehicle)
 end
 
 function ParkVehicle:onLoad(savegame)
@@ -55,6 +63,7 @@ function ParkVehicle:onLoad(savegame)
   end
 
   spec.inputPressed = false
+  spec.registrationKey = nil
   spec.actionEvents = {}
   spec.icon = createImageOverlay(ParkVehicle.modDir .. "icon.png")
   spec.overlay = createImageOverlay(ParkVehicle.modDir .. "overlay.png")
@@ -66,7 +75,7 @@ function ParkVehicle:onLoad(savegame)
   if savegame ~= nil then
     local i = 0
     while true do
-    
+
       local legacykey = string.format("%s.ParkVehicle.player(%d)", savegame.key, i) -- TODO Remove with next release
       local key = string.format("%s.%s.ParkVehicle.player(%d)", savegame.key, g_parkVehicleSystem.modName, i)
       if not hasXMLProperty(savegame.xmlFile.handle, key) then
@@ -90,19 +99,32 @@ function ParkVehicle:onLoad(savegame)
   end
 
   self.spec_enterable:setIsTabbable(not spec.state[spec.uniqueUserId])
+  spec.registrationKey = g_parkVehicleSystem:registerInstance(self)
 end
 
 function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
   if self.isClient then
     local spec = self.spec_parkvehicle
     if spec.inputPressed then
-      local newValue = not spec.state[spec.uniqueUserId]
-      self.spec_enterable:setIsTabbable(not newValue)
-      spec.state[spec.uniqueUserId] = newValue
-      self:raiseDirtyFlags(spec.dirtyFlag)
+      local newValue = not self:getParkVehicleState()
+      self:setParkVehicleState(newValue)
       spec.inputPressed = false
     end
   end
+end
+
+---@param newValue boolean
+function ParkVehicle:setParkVehicleState(newValue)
+  local spec = self.spec_parkvehicle
+  self.spec_enterable:setIsTabbable(not newValue)
+  spec.state[spec.uniqueUserId] = newValue
+  self:raiseDirtyFlags(spec.dirtyFlag)
+end
+
+---@return boolean
+function ParkVehicle:getParkVehicleState()
+  local spec = self.spec_parkvehicle
+  return spec.state[spec.uniqueUserId]
 end
 
 function ParkVehicle:onDraw()
@@ -119,6 +141,12 @@ function ParkVehicle:onDraw()
       renderOverlay(spec.overlay, startX, startY, iconWidth, iconHeight)
     end
   end
+end
+
+function ParkVehicle:onDelete()
+  local spec = self.spec_parkvehicle
+  print("onDelete")
+  g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
 end
 
 --Called on server side on join
@@ -239,5 +267,6 @@ function ParkVehicle.randomString(length)
     math.randomseed(getDate("%d%m%y%H%M%S"))
     return randomString(length - 1) .. charset[math.random(1, #charset)]
   end
+
   return randomString(length)
 end

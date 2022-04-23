@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="61">
   <author>VertexDezign</author>
-  <version>1.0.1.0</version>
+  <version>1.1.0.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -12,6 +12,10 @@
 You can (de)activate the tabbing of the current vehicle with Ctrl + T.
 In Multiplayer the parking state is only set for yourself.
 The state is saved in single player and in multiplayer.
+
+v1.1.0.0
+- Issue with adding specialization fixed
+- Add functionality to unpark all vehicles
 ]]>
     </en>
     <de>
@@ -19,6 +23,10 @@ The state is saved in single player and in multiplayer.
 Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
 Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
 Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
+
+v1.1.0.0:
+- Fehler beim hinzufügen der spec behogen
+- Alle Fahrzeuge entparken hinzugefügt
 ]]>
     </de>
   </description>
@@ -33,19 +41,31 @@ Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
     </text>
+    <text name="input_PARKVEHICLE_UNPARK_ALL">
+      <en>UnPark all vehicles</en>
+      <de>Alle Fahrzeug entparken</de>
+    </text>
     <text name="PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
+    </text>
+    <text name="PARKVEHICLE_UNPARK_ALL">
+      <en>UnPark all vehicles</en>
+      <de>Alle Fahrzeug entparken</de>
     </text>
   </l10n>
 
   <actions>
     <action name="PARKVEHICLE_01" category="VEHICLE"/>
+    <action name="PARKVEHICLE_UNPARK_ALL" />
   </actions>
 
   <inputBinding>
     <actionBinding action="PARKVEHICLE_01">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
+    </actionBinding>
+    <actionBinding action="PARKVEHICLE_UNPARK_ALL">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
   </inputBinding>
 </modDesc>

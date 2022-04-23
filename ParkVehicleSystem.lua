@@ -2,7 +2,10 @@
 ---@class ParkVehicleSystem
 ---@field modName string
 ---@field modDir string
+---@field inputManager InputBinding
 ---@field debug boolean
+---@field instances table<integer, ParkVehicle>
+---@field counter integer Increased if an instance is registered, used as key within the table
 ParkVehicleSystem = {}
 
 local ParkVehicleSystem_mt = Class(ParkVehicleSystem)
@@ -10,8 +13,10 @@ local ParkVehicleSystem_mt = Class(ParkVehicleSystem)
 ---
 ---@param modName string
 ---@param modDir string
+---@param inputManager InputBinding
+---@param debug boolean
 ---@return ParkVehicleSystem
-function ParkVehicleSystem:new(modName, modDir, debug)
+function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     local self = {}
 
     setmetatable(self, ParkVehicleSystem_mt)
@@ -19,11 +24,15 @@ function ParkVehicleSystem:new(modName, modDir, debug)
     self.modName = modName
     self.modDir = modDir
     self.debug = debug
+    self.inputManager = inputManager
+
+    self.instances = {}
+    self.counter = 0
 
     return self
 end
 
----@param typeManager VehicleTypeManager
+---@param typeManager TypeManager
 ---@param specManager SpecializationManager
 function ParkVehicleSystem:installSpecialization(typeManager, specManager)
     -- register spec
@@ -50,4 +59,37 @@ function ParkVehicleSystem:installSpecialization(typeManager, specManager)
     end
 
     print(string.format("Inserted Park Vehicle into %i of %i vehicle types", modified, totalCount))
+end
+
+function ParkVehicleSystem:registerActionEvents()
+    local _, eventId = self.inputManager:registerActionEvent(InputAction.PARKVEHICLE_UNPARK_ALL, self, self.unparkAll, false, true, false, true)
+    self.inputManager:setActionEventTextPriority(eventId, GS_PRIO_VERY_LOW)
+  
+  end
+  
+  function ParkVehicleSystem:unregisterActionEvents()
+    self.inputManager:removeActionEventsByTarget(self)
+  end
+
+---@param instance ParkVehicle
+---@return integer the key to unregister this instance
+function ParkVehicleSystem:registerInstance(instance)
+    local key = self.counter
+    self.instances[key] = instance
+
+    
+    self.counter = self.counter + 1
+
+    return key
+end
+
+---@param key integer
+function ParkVehicleSystem:unregisterInstance(key)
+    self.instances[key] = nil
+end
+
+function ParkVehicleSystem:unparkAll()
+    for _, value in pairs(self.instances) do
+        value:setParkVehicleState(false)
+    end
 end

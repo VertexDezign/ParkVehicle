@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="61">
   <author>VertexDezign</author>
-  <version>1.0.0.0</version>
+  <version>1.0.1.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -25,15 +25,8 @@ Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
   <iconFilename>store.png</iconFilename>
   <multiplayer supported="true"/>
   <extraSourceFiles>
-    <sourceFile filename="addSpecialization.lua"/>
+    <sourceFile filename="loader.lua"/>
   </extraSourceFiles>
-
-  <addSpecialization>
-    <specialization name="ParkVehicle" className="ParkVehicle" filename="ParkVehicle.lua" l10nNameTag="PARKVEHICLE" debug="false">
-      <restrictions state="0" name="enterable" />
-      <restrictions state="1" name="rideable" />
-    </specialization>
-  </addSpecialization>
 
   <l10n>
     <text name="input_PARKVEHICLE_01">

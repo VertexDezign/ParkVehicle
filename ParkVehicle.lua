@@ -12,7 +12,7 @@
 
 ParkVehicle = {}
 ParkVehicle.inputName = "parkVehicle"
-ParkVehicle.modDir = g_currentModDirectory
+ParkVehicle.modDir = g_parkVehicleSystem.modDir
 
 function ParkVehicle.prerequisitesPresent(specializations)
   return SpecializationUtil.hasSpecialization(Enterable, specializations)
@@ -66,7 +66,12 @@ function ParkVehicle:onLoad(savegame)
   if savegame ~= nil then
     local i = 0
     while true do
-      local key = string.format("%s.ParkVehicle.player(%d)", savegame.key, i)
+    
+      local legacykey = string.format("%s.ParkVehicle.player(%d)", savegame.key, i) -- TODO Remove with next release
+      local key = string.format("%s.%s.ParkVehicle.player(%d)", savegame.key, g_parkVehicleSystem.modName, i)
+      if not hasXMLProperty(savegame.xmlFile.handle, key) then
+        key = legacykey
+      end
       if not hasXMLProperty(savegame.xmlFile.handle, key) then
         break
       end

@@ -22,7 +22,7 @@ local function unregisterActionEvents()
 end
 
 local function init()
-    g_parkVehicleSystem = ParkVehicleSystem:new(modName, directory, g_inputBinding, true)
+    g_parkVehicleSystem = ParkVehicleSystem:new(modName, directory, g_inputBinding, false)
 
     TypeManager.validateTypes = Utils.prependedFunction(TypeManager.validateTypes, validateVehicleTypes)
 

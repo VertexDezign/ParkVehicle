@@ -62,10 +62,10 @@ v1.1.0.0:
 
   <inputBinding>
     <actionBinding action="PARKVEHICLE_01">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_t" />
     </actionBinding>
     <actionBinding action="PARKVEHICLE_UNPARK_ALL">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lctrl KEY_t" axisComponent="+" inputComponent="+" index="1"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lctrl KEY_t" />
     </actionBinding>
   </inputBinding>
 </modDesc>

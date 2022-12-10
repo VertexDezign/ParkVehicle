@@ -145,7 +145,6 @@ end
 
 function ParkVehicle:onDelete()
   local spec = self.spec_parkvehicle
-  print("onDelete")
   g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
 end
 

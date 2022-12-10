@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="64">
   <author>VertexDezign</author>
-  <version>1.1.0.0</version>
+  <version>1.1.1.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
@@ -16,6 +16,9 @@ The state is saved in single player and in multiplayer.
 v1.1.0.0
 - Issue with adding specialization fixed
 - Add functionality to unpark all vehicles
+
+v1.1.1.0:
+- removed print message in onDelete function
 ]]>
     </en>
     <de>
@@ -27,6 +30,9 @@ Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
 v1.1.0.0:
 - Fehler beim Hinzufügen der Spec behoben
 - Alle Fahrzeuge entparken hinzugefügt
+
+v1.1.1.0:
+- print im onDelete entfernt
 ]]>
     </de>
   </description>

@@ -7,6 +7,7 @@
 --              v2.1.0.0 - 2019-04-01 - Support all enterable vehicles, create modSettings folder
 --              v3.0.0.0 - 2021-11-19 - FS22
 --              v3.1.0.0 - 2022-04-23 - Add possibiltiy to unpark all, fix issue with registration in loader
+--              v4.0.0.0 - 2024-11-09 - FS25
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: https://grisu118.ch or https://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
@@ -145,7 +146,9 @@ end
 
 function ParkVehicle:onDelete()
   local spec = self.spec_parkvehicle
-  g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
+  if spec ~= nil then
+    g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
+  end
 end
 
 --Called on server side on join

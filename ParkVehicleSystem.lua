@@ -89,6 +89,7 @@ function ParkVehicleSystem:unregisterInstance(key)
 end
 
 function ParkVehicleSystem:unparkAll()
+    print("unpark All")
     for _, value in pairs(self.instances) do
         value:setParkVehicleState(false)
     end

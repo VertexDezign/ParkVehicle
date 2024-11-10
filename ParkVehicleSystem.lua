@@ -63,8 +63,7 @@ end
 
 function ParkVehicleSystem:registerActionEvents()
     local _, eventId = self.inputManager:registerActionEvent(InputAction.PARKVEHICLE_UNPARK_ALL, self, self.unparkAll, false, true, false, true)
-    self.inputManager:setActionEventTextPriority(eventId, GS_PRIO_VERY_LOW)
-  
+    self.inputManager:setActionEventTextPriority(eventId, GS_PRIO_VERY_HIGH)
   end
   
   function ParkVehicleSystem:unregisterActionEvents()
@@ -77,7 +76,6 @@ function ParkVehicleSystem:registerInstance(instance)
     local key = self.counter
     self.instances[key] = instance
 
-    
     self.counter = self.counter + 1
 
     return key
@@ -89,7 +87,6 @@ function ParkVehicleSystem:unregisterInstance(key)
 end
 
 function ParkVehicleSystem:unparkAll()
-    print("unpark All")
     for _, value in pairs(self.instances) do
         value:setParkVehicleState(false)
     end

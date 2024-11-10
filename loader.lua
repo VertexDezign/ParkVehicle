@@ -7,19 +7,16 @@ local modName = g_currentModName
 source(Utils.getFilename("ParkVehicleSystem.lua", directory))
 
 local function validateVehicleTypes(typeManager)
-    print("PA: validateVehicleTypes")
     if typeManager.typeName == "vehicle" then
         g_parkVehicleSystem:installSpecialization(g_vehicleTypeManager, g_specializationManager)
     end
 end
 
 local function registerActionEvents()
-    print("PA: registerActionEvents")
     g_parkVehicleSystem:registerActionEvents()
 end
 
 local function unregisterActionEvents()
-    print("PA: unregisterActionEvents")
     g_parkVehicleSystem:unregisterActionEvents()
 end
 
@@ -28,8 +25,10 @@ local function init()
 
     TypeManager.validateTypes = Utils.prependedFunction(TypeManager.validateTypes, validateVehicleTypes)
 
-    --FSBaseMission.registerActionEvents = Utils.appendedFunction(FSBaseMission.registerActionEvents, registerActionEvents)
-    --BaseMission.unregisterActionEvents = Utils.appendedFunction(BaseMission.unregisterActionEvents, unregisterActionEvents)
+    --FSBaseMission.onStartMission = Utils.appendedFunction(FSBaseMission.onStartMission, registerActionEvents)
+    --FSBaseMission.onEnterVehicle = Utils.appendedFunction(FSBaseMission.onEnterVehicle, registerActionEvents)
+    --FSBaseMission.onLeaveVehicle = Utils.appendedFunction(FSBaseMission.onLeaveVehicle, registerActionEvents)
+    --FSBaseMission.delete = Utils.appendedFunction(FSBaseMission.delete, unregisterActionEvents)
 end
 
 init()

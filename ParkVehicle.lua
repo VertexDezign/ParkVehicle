@@ -132,11 +132,14 @@ function ParkVehicle:onDraw()
   if self.isClient and self:getIsActive() then
     local spec = self.spec_parkvehicle
     local uiScale = g_gameSettings:getValue("uiScale")
+    local speedMeter = g_currentMission.hud.speedMeter
 
-    local startX = 1 - 0.0755 * uiScale + (0.04 * (uiScale - 0.5))
-    local startY = 0.05 * uiScale - (0.08 * (uiScale - 0.5))
-    local iconWidth = 0.01 * uiScale
+    local iconWidth = 0.011 * uiScale
     local iconHeight = iconWidth * g_screenAspectRatio
+
+    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5)
+    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4)
+
     renderOverlay(spec.icon, startX, startY, iconWidth, iconHeight)
     if spec.state[spec.uniqueUserId] then
       renderOverlay(spec.overlay, startX, startY, iconWidth, iconHeight)
@@ -231,8 +234,27 @@ function ParkVehicle:onRegisterActionEvents(isActiveForInput)
       )
 
       g_inputBinding:setActionEventTextPriority(actionEventId, GS_PRIO_VERY_LOW)
+
+      local _, unparkAllEventId =
+      self:addActionEvent(
+          spec.actionEvents,
+          "PARKVEHICLE_UNPARK_ALL",
+          self,
+          ParkVehicle.actionEventUnparkAll,
+          false,
+          true,
+          false,
+          true,
+          nil
+      )
+
+      g_inputBinding:setActionEventTextPriority(unparkAllEventId, GS_PRIO_VERY_LOW)
     end
   end
+end
+
+function ParkVehicle:actionEventUnparkAll(self)
+  g_parkVehicleSystem:unparkAll()
 end
 
 function ParkVehicle.actionEventParkVehicle(self, actionName, inputValue, callbackState, isAnalog)

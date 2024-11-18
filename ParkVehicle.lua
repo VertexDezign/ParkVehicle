@@ -45,11 +45,13 @@ function ParkVehicle:onLoad(savegame)
   if g_dedicatedServerInfo == nil then
     local modSettingsDir = getUserProfileAppPath() .. "modSettings"
     local xmlFile = modSettingsDir .. "/parkVehicle.xml"
-    local id = nil
+    local id = g_currentMission.playerNickname
     if not fileExists(xmlFile) then
       createFolder(modSettingsDir)
       local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
-      id = ParkVehicle.randomString(25)
+      if id == nil then
+        id = ParkVehicle.randomString(25)
+      end
       setXMLString(xml, "ParkVehicle#uniqueUserId", id)
       saveXMLFile(xml)
       delete(xml)
@@ -288,7 +290,6 @@ function ParkVehicle.randomString(length)
     if not length or length <= 0 then
       return ""
     end
-    math.randomseed(getDate("%d%m%y%H%M%S"))
     return randomString(length - 1) .. charset[math.random(1, #charset)]
   end
 

@@ -1,42 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="72">
+<modDesc descVersion="92">
   <author>VertexDezign</author>
-  <version>1.1.1.0</version>
+  <version>1.0.0.0</version>
   <title>
     <en>Park Vehicle</en>
-    <de>Parkfunktion für Fahrzeuge</de>
+    <de>Parkfunktion Für Fahrzeuge</de>
   </title>
   <description>
     <en>
       <![CDATA[
-You can (de)activate the tabbing of the current vehicle with Ctrl + T.
+You can (de)activate the tabbing of the current vehicle with Ctrl + T to “park” vehicles.
+With Shift + Ctrl + T you can activate tabbing again for all your vehicles.
 In Multiplayer the parking state is only set for yourself.
 The state is saved in single player and in multiplayer.
 
-v1.1.0.0
-- Issue with adding specialization fixed
-- Add functionality to unpark all vehicles
-
-v1.1.1.0:
-- removed print message in onDelete function
+Github-link: https://github.com/VertexDezign/ParkVehicle
 ]]>
     </en>
     <de>
       <![CDATA[
-Erlaubt mithilfe von Ctrl + T eine Deaktivierung der Tabbing Funktion. So können Fahrzeuge "geparkt" werden.
-Im Mehrspieler Modus gelten die geparkten Fahrzeuge nur für einen selbst.
-Der Zustand wird im Einzelspieler Modus und im Mehrspieler Modus gespeichert.
+Mit Strg + T kannst du das Tabben für das aktuelle Fahrzeug (de)aktivieren um Fahrzeuge zu "parken".
+Mit Shift + Strg + T kannst du das Tabben wieder für alle deine Fahrzeuge aktivieren.
+Im Multiplayer wird der Parkstatus nur für dich selbst gesetzt.
+Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 
-v1.1.0.0:
-- Fehler beim Hinzufügen der Spec behoben
-- Alle Fahrzeuge entparken hinzugefügt
-
-v1.1.1.0:
-- print im onDelete entfernt
+Github-Link: https://github.com/VertexDezign/ParkVehicle
 ]]>
     </de>
   </description>
-  <iconFilename>store.png</iconFilename>
+  <iconFilename>icon_parkVehicle.png</iconFilename>
   <multiplayer supported="true"/>
   <extraSourceFiles>
     <sourceFile filename="loader.lua"/>

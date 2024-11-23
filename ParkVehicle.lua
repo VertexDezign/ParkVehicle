@@ -7,6 +7,7 @@
 --              v2.1.0.0 - 2019-04-01 - Support all enterable vehicles, create modSettings folder
 --              v3.0.0.0 - 2021-11-19 - FS22
 --              v3.1.0.0 - 2022-04-23 - Add possibiltiy to unpark all, fix issue with registration in loader
+--              v4.0.0.0 - 2024-11-09 - FS25
 -- @Descripion: Allows temporary disabling of the tab function
 -- @web: https://grisu118.ch or https://vertexdezign.net
 -- Copyright (C) Grisu118, All Rights Reserved.
@@ -44,11 +45,13 @@ function ParkVehicle:onLoad(savegame)
   if g_dedicatedServerInfo == nil then
     local modSettingsDir = getUserProfileAppPath() .. "modSettings"
     local xmlFile = modSettingsDir .. "/parkVehicle.xml"
-    local id = nil
+    local id = g_currentMission.playerNickname
     if not fileExists(xmlFile) then
       createFolder(modSettingsDir)
       local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
-      id = ParkVehicle.randomString(25)
+      if id == nil then
+        id = ParkVehicle.randomString(25)
+      end
       setXMLString(xml, "ParkVehicle#uniqueUserId", id)
       saveXMLFile(xml)
       delete(xml)
@@ -131,11 +134,14 @@ function ParkVehicle:onDraw()
   if self.isClient and self:getIsActive() then
     local spec = self.spec_parkvehicle
     local uiScale = g_gameSettings:getValue("uiScale")
+    local speedMeter = g_currentMission.hud.speedMeter
 
-    local startX = 1 - 0.0755 * uiScale + (0.04 * (uiScale - 0.5))
-    local startY = 0.05 * uiScale - (0.08 * (uiScale - 0.5))
-    local iconWidth = 0.01 * uiScale
+    local iconWidth = 0.011 * uiScale
     local iconHeight = iconWidth * g_screenAspectRatio
+
+    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5)
+    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4)
+
     renderOverlay(spec.icon, startX, startY, iconWidth, iconHeight)
     if spec.state[spec.uniqueUserId] then
       renderOverlay(spec.overlay, startX, startY, iconWidth, iconHeight)
@@ -145,7 +151,9 @@ end
 
 function ParkVehicle:onDelete()
   local spec = self.spec_parkvehicle
-  g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
+  if spec ~= nil then
+    g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
+  end
 end
 
 --Called on server side on join
@@ -228,8 +236,27 @@ function ParkVehicle:onRegisterActionEvents(isActiveForInput)
       )
 
       g_inputBinding:setActionEventTextPriority(actionEventId, GS_PRIO_VERY_LOW)
+
+      local _, unparkAllEventId =
+      self:addActionEvent(
+          spec.actionEvents,
+          "PARKVEHICLE_UNPARK_ALL",
+          self,
+          ParkVehicle.actionEventUnparkAll,
+          false,
+          true,
+          false,
+          true,
+          nil
+      )
+
+      g_inputBinding:setActionEventTextPriority(unparkAllEventId, GS_PRIO_VERY_LOW)
     end
   end
+end
+
+function ParkVehicle:actionEventUnparkAll(self)
+  g_parkVehicleSystem:unparkAll()
 end
 
 function ParkVehicle.actionEventParkVehicle(self, actionName, inputValue, callbackState, isAnalog)
@@ -263,7 +290,6 @@ function ParkVehicle.randomString(length)
     if not length or length <= 0 then
       return ""
     end
-    math.randomseed(getDate("%d%m%y%H%M%S"))
     return randomString(length - 1) .. charset[math.random(1, #charset)]
   end
 

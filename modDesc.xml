@@ -5,6 +5,7 @@
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion für Fahrzeuge</de>
+	<tr>Aracı Park Et</tr>
   </title>
   <description>
     <en>
@@ -35,6 +36,20 @@ v1.1.1.0:
 - print im onDelete entfernt
 ]]>
     </de>
+    <tr>
+      <![CDATA[
+Geçerli aracın park durumunu Ctrl + T ile etkinleştirebilirsin/kapatabilirsin.
+Çok oyunculu modda park durumu sadece kendiniz için ayarlanır.
+Durum tek oyunculuda ve çok oyunculuda kaydedilir.
+
+v1.1.0.0
+- Issue with adding specialization fixed
+- Add functionality to unpark all vehicles
+
+v1.1.1.0:
+- removed print message in onDelete function
+]]>
+    </tr>
   </description>
   <iconFilename>store.png</iconFilename>
   <multiplayer supported="true"/>
@@ -46,18 +61,22 @@ v1.1.1.0:
     <text name="input_PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
+	  <tr>Aracı park et</tr>
     </text>
     <text name="input_PARKVEHICLE_UNPARK_ALL">
       <en>UnPark all vehicles</en>
       <de>Alle Fahrzeug entparken</de>
+	  <tr>Tüm araçları parktan çıkar</tr>
     </text>
     <text name="PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
+	  <tr>Aracı park et</tr>
     </text>
     <text name="PARKVEHICLE_UNPARK_ALL">
       <en>UnPark all vehicles</en>
       <de>Alle Fahrzeug entparken</de>
+	  <tr>Tüm araçları parktan çıkar</tr>
     </text>
   </l10n>
 

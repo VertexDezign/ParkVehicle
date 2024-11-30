@@ -5,6 +5,7 @@
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion Für Fahrzeuge</de>
+	<tr>Aracı Park Et</tr>
   </title>
   <description>
     <en>
@@ -27,6 +28,16 @@ Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 ]]>
     </de>
+    <tr>
+      <![CDATA[
+Araçları “park etmek” için Ctrl + T ile mevcut aracın sekmesini etkinleştirebilirsiniz/kapatabilirsiniz.
+Shift + Ctrl + T ile tüm araçlarınız için park etmeyi tekrar etkinleştirebilirsiniz.
+Çok oyunculu modda park durumu sadece kendiniz için ayarlanır.
+Durum tek oyunculuda ve çok oyunculuda kaydedilir.
+
+Github-Link: https://github.com/VertexDezign/ParkVehicle
+]]>
+    </tr>
   </description>
   <iconFilename>icon_parkVehicle.png</iconFilename>
   <multiplayer supported="true"/>
@@ -38,18 +49,22 @@ Github-Link: https://github.com/VertexDezign/ParkVehicle
     <text name="input_PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
+	  <tr>Aracı park et</tr>
     </text>
     <text name="input_PARKVEHICLE_UNPARK_ALL">
       <en>UnPark all vehicles</en>
       <de>Alle Fahrzeug entparken</de>
+	  <tr>Tüm araçları parktan çıkar</tr>
     </text>
     <text name="PARKVEHICLE_01">
       <en>Park vehicle</en>
       <de>Fahrzeug parken</de>
+	  <tr>Aracı park et</tr>
     </text>
     <text name="PARKVEHICLE_UNPARK_ALL">
       <en>UnPark all vehicles</en>
       <de>Alle Fahrzeug entparken</de>
+	  <tr>Tüm araçları parktan çıkar</tr>
     </text>
   </l10n>
 

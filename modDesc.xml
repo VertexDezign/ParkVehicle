@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="92">
+<modDesc descVersion="94">
   <author>VertexDezign</author>
-  <version>1.0.0.0</version>
+  <version>1.0.1.0</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion Für Fahrzeuge</de>
@@ -16,6 +16,10 @@ In Multiplayer the parking state is only set for yourself.
 The state is saved in single player and in multiplayer.
 
 Github-link: https://github.com/VertexDezign/ParkVehicle
+
+Changelog:
+* Fixed: renderOverlay is only allowed in 'draw' callbacks.
+* Added: Turkish translation
 ]]>
     </en>
     <de>
@@ -26,6 +30,10 @@ Im Multiplayer wird der Parkstatus nur für dich selbst gesetzt.
 Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 
 Github-Link: https://github.com/VertexDezign/ParkVehicle
+
+Changelog:
+* Behoben: renderOverlay is only allowed in 'draw' callbacks.
+* Hinzugefügt: Türkische übersetzung
 ]]>
     </de>
     <tr>
@@ -36,6 +44,10 @@ Shift + Ctrl + T ile tüm araçlarınız için park etmeyi tekrar etkinleştireb
 Durum tek oyunculuda ve çok oyunculuda kaydedilir.
 
 Github-Link: https://github.com/VertexDezign/ParkVehicle
+
+Değişiklik günlüğü:
+* Düzeltildi: renderOverlay is only allowed in 'draw' callbacks.
+* Eklendi: Türkçe çeviri
 ]]>
     </tr>
   </description>

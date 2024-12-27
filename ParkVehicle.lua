@@ -24,12 +24,12 @@ end
 function ParkVehicle.registerFunctions(vehicleType)
   SpecializationUtil.registerFunction(vehicleType, "getParkVehicleState", ParkVehicle.getParkVehicleState)
   SpecializationUtil.registerFunction(vehicleType, "setParkVehicleState", ParkVehicle.setParkVehicleState)
+  SpecializationUtil.registerFunction(vehicleType, "parkVehicleRender", ParkVehicle.parkVehicleRender)
 end
 
 function ParkVehicle.registerEventListeners(vehicleType)
   SpecializationUtil.registerEventListener(vehicleType, "onLoad", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onUpdate", ParkVehicle)
-  SpecializationUtil.registerEventListener(vehicleType, "onDraw", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onReadStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", ParkVehicle)
@@ -130,7 +130,7 @@ function ParkVehicle:getParkVehicleState()
   return spec.state[spec.uniqueUserId]
 end
 
-function ParkVehicle:onDraw()
+function ParkVehicle:parkVehicleRender()
   if self.isClient and self:getIsActive() then
     local spec = self.spec_parkvehicle
     local uiScale = g_gameSettings:getValue("uiScale")

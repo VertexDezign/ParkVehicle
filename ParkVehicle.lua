@@ -30,7 +30,6 @@ end
 function ParkVehicle.registerEventListeners(vehicleType)
   SpecializationUtil.registerEventListener(vehicleType, "onLoad", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onUpdate", ParkVehicle)
-  --SpecializationUtil.registerEventListener(vehicleType, "onDraw", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onReadStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", ParkVehicle)

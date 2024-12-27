@@ -28,8 +28,24 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
 
     self.instances = {}
     self.counter = 0
+    self.controlledVehicle = nil
 
     return self
+end
+
+function ParkVehicleSystem:onMissionLoaded(mission)
+    -- hook into function, which is called only if the HUD is really visible for a vehicle
+    mission.hud.drawControlledEntityHUD = Utils.appendedFunction(mission.hud.drawControlledEntityHUD,
+        function(self)
+            if self.isVisible then
+                ParkVehicleSystem:renderHud()
+            end
+        end)
+    -- hook into function, which sets the vehicle for HUD display
+    mission.hud.setControlledVehicle = Utils.appendedFunction(mission.hud.setControlledVehicle,
+        function(self, vehicle)
+            ParkVehicleSystem:setVehicle(vehicle)
+        end)
 end
 
 ---@param typeManager TypeManager
@@ -89,5 +105,15 @@ end
 function ParkVehicleSystem:unparkAll()
     for _, value in pairs(self.instances) do
         value:setParkVehicleState(false)
+    end
+end
+
+function ParkVehicleSystem:setVehicle(vehicle)
+    self.controlledVehicle = vehicle
+end
+
+function ParkVehicleSystem:renderHud()
+    if self.controlledVehicle ~= nil and self.controlledVehicle.parkVehicleRender ~= nil then
+        self.controlledVehicle:parkVehicleRender()
     end
 end

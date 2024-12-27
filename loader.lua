@@ -20,8 +20,20 @@ local function unregisterActionEvents()
     g_parkVehicleSystem:unregisterActionEvents()
 end
 
+
+local function loadedMission(mission)
+    if mission.cancelLoading then
+        return
+    end
+
+    g_parkVehicleSystem:onMissionLoaded(mission)
+end
+
 local function init()
     g_parkVehicleSystem = ParkVehicleSystem:new(modName, directory, g_inputBinding, false)
+
+    -- hook into late load
+    Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, loadedMission)
 
     TypeManager.validateTypes = Utils.prependedFunction(TypeManager.validateTypes, validateVehicleTypes)
 

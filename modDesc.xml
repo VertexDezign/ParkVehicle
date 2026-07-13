@@ -78,11 +78,37 @@ Değişiklik günlüğü:
       <de>Alle Fahrzeug entparken</de>
 	  <tr>Tüm araçları parktan çıkar</tr>
     </text>
+    <text name="input_PARKVEHICLE_CYCLE_PARKED">
+      <en>Cycle parked vehicles</en>
+      <de>Geparkte Fahrzeuge durchschalten</de>
+	  <tr>Park edilmiş araçlar arasında geçiş yap</tr>
+    </text>
+    <text name="PARKVEHICLE_CYCLE_PARKED">
+      <en>Cycle parked vehicles</en>
+      <de>Geparkte Fahrzeuge durchschalten</de>
+	  <tr>Park edilmiş araçlar arasında geçiş yap</tr>
+    </text>
+    <text name="PARKVEHICLE_SETTINGS_SECTION">
+      <en>Park Vehicle</en>
+      <de>Parkfunktion Für Fahrzeuge</de>
+	  <tr>Aracı Park Et</tr>
+    </text>
+    <text name="PARKVEHICLE_AUTOUNPARK_SETTING">
+      <en>Auto-unpark vehicles</en>
+      <de>Fahrzeuge automatisch entparken</de>
+	  <tr>Araçları otomatik parktan çıkar</tr>
+    </text>
+    <text name="PARKVEHICLE_AUTOUNPARK_SETTING_TOOLTIP">
+      <en>Automatically unparks a vehicle once it has moved a few meters, so you don't have to remember to do it yourself.</en>
+      <de>Entparkt ein Fahrzeug automatisch, sobald es sich einige Meter bewegt hat, damit du es nicht selbst tun musst.</de>
+	  <tr>Bir araç birkaç metre hareket ettiğinde otomatik olarak parktan çıkarılır, böylece bunu kendiniz yapmayı hatırlamanıza gerek kalmaz.</tr>
+    </text>
   </l10n>
 
   <actions>
     <action name="PARKVEHICLE_01" category="VEHICLE"/>
     <action name="PARKVEHICLE_UNPARK_ALL" />
+    <action name="PARKVEHICLE_CYCLE_PARKED" />
   </actions>
 
   <inputBinding>
@@ -91,6 +117,9 @@ Değişiklik günlüğü:
     </actionBinding>
     <actionBinding action="PARKVEHICLE_UNPARK_ALL">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_lctrl KEY_t" />
+    </actionBinding>
+    <actionBinding action="PARKVEHICLE_CYCLE_PARKED">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lshift KEY_tab" />
     </actionBinding>
   </inputBinding>
 </modDesc>

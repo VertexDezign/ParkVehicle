@@ -5,6 +5,7 @@ local modName = g_currentModName
 
 
 source(Utils.getFilename("ParkVehicleSystem.lua", directory))
+source(Utils.getFilename("ParkVehicleSettingsGui.lua", directory))
 
 local function validateVehicleTypes(typeManager)
     if typeManager.typeName == "vehicle" then
@@ -31,6 +32,10 @@ end
 
 local function init()
     g_parkVehicleSystem = ParkVehicleSystem:new(modName, directory, g_inputBinding, false)
+
+    if g_dedicatedServerInfo == nil then
+        ParkVehicleSettingsGui.install()
+    end
 
     -- hook into late load
     Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, loadedMission)

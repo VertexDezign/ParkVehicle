@@ -8,6 +8,13 @@
 ---@field counter integer Increased if an instance is registered, used as key within the table
 ParkVehicleSystem = {}
 
+-- Vehicle types which should never receive the parkVehicle specialization,
+-- because the base game already fixes their tabbable state on purpose
+-- (e.g. the Kaercher HDS 9/18-4 M car wash, type="highPressureWasher").
+ParkVehicleSystem.EXCLUDED_TYPES = {
+    ["highPressureWasher"] = true,
+}
+
 local ParkVehicleSystem_mt = Class(ParkVehicleSystem)
 
 ---
@@ -30,7 +37,56 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     self.counter = 0
     self.controlledVehicle = nil
 
+    self.autoUnparkEnabled = true
+    self:loadSettings()
+
     return self
+end
+
+function ParkVehicleSystem:getSettingsFilePath()
+    return getUserProfileAppPath() .. "modSettings/parkVehicle.xml"
+end
+
+function ParkVehicleSystem:loadSettings()
+    if g_dedicatedServerInfo ~= nil then
+        return
+    end
+
+    local filePath = self:getSettingsFilePath()
+    if not fileExists(filePath) then
+        return
+    end
+
+    local xml = loadXMLFile("ParkVehicleSettings", filePath)
+    if hasXMLProperty(xml, "ParkVehicle#autoUnparkEnabled") then
+        self.autoUnparkEnabled = Utils.getNoNil(getXMLBool(xml, "ParkVehicle#autoUnparkEnabled"), true)
+    end
+    delete(xml)
+end
+
+function ParkVehicleSystem:saveSettings()
+    if g_dedicatedServerInfo ~= nil then
+        return
+    end
+
+    local filePath = self:getSettingsFilePath()
+    local xml
+    if fileExists(filePath) then
+        xml = loadXMLFile("ParkVehicleSettings", filePath)
+    else
+        createFolder(getUserProfileAppPath() .. "modSettings")
+        xml = createXMLFile("ParkVehicleSettings", filePath, "ParkVehicle")
+    end
+
+    setXMLBool(xml, "ParkVehicle#autoUnparkEnabled", self.autoUnparkEnabled)
+    saveXMLFile(xml)
+    delete(xml)
+end
+
+---@param enabled boolean
+function ParkVehicleSystem:setAutoUnparkEnabled(enabled)
+    self.autoUnparkEnabled = enabled
+    self:saveSettings()
 end
 
 function ParkVehicleSystem:onMissionLoaded(mission)
@@ -59,7 +115,8 @@ function ParkVehicleSystem:installSpecialization(typeManager, specManager)
     local modified = 0
     for typeName, typeEntry in pairs(typeManager:getTypes()) do
         totalCount = totalCount + 1
-        if SpecializationUtil.hasSpecialization(Enterable, typeEntry.specializations) and
+        if not ParkVehicleSystem.EXCLUDED_TYPES[typeName] and
+            SpecializationUtil.hasSpecialization(Enterable, typeEntry.specializations) and
             not SpecializationUtil.hasSpecialization(Rideable, typeEntry.specializations) and
             not SpecializationUtil.hasSpecialization(ParkVehicle, typeEntry.specializations) then
             typeManager:addSpecialization(typeName, self.modName .. ".parkVehicle")
@@ -106,6 +163,38 @@ function ParkVehicleSystem:unparkAll()
     for _, value in pairs(self.instances) do
         value:setParkVehicleState(false)
     end
+end
+
+---@return ParkVehicle[] currently parked vehicle instances, in registration order
+function ParkVehicleSystem:getParkedVehicles()
+    local vehicles = {}
+    for i = 0, self.counter - 1 do
+        local instance = self.instances[i]
+        if instance ~= nil and instance:getParkVehicleState() then
+            table.insert(vehicles, instance)
+        end
+    end
+    return vehicles
+end
+
+-- Bypasses the normal Tab restriction: cycles only through vehicles that are
+-- currently parked, so you can reach them without unparking first.
+function ParkVehicleSystem:cycleParkedVehicles()
+    local vehicles = self:getParkedVehicles()
+    if #vehicles == 0 then
+        return
+    end
+
+    local currentVehicle = g_localPlayer:getCurrentVehicle()
+    local index = 1
+    for i, vehicle in ipairs(vehicles) do
+        if vehicle == currentVehicle then
+            index = (i % #vehicles) + 1
+            break
+        end
+    end
+
+    g_localPlayer:requestToEnterVehicle(vehicles[index])
 end
 
 function ParkVehicleSystem:setVehicle(vehicle)

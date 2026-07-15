@@ -16,6 +16,7 @@
 ParkVehicle = {}
 ParkVehicle.inputName = "parkVehicle"
 ParkVehicle.modDir = g_parkVehicleSystem.modDir
+ParkVehicle.AUTO_UNPARK_DISTANCE = 3 -- meters a parked vehicle has to move (by any means) before it auto-unparks
 
 function ParkVehicle.prerequisitesPresent(specializations)
   return SpecializationUtil.hasSpecialization(Enterable, specializations)
@@ -73,6 +74,7 @@ function ParkVehicle:onLoad(savegame)
   spec.dirtyFlag = self:getNextDirtyFlag()
 
   spec.state = {}
+  spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = 0, 0, 0
 
   local isEmpty = true
   if savegame ~= nil then
@@ -102,6 +104,9 @@ function ParkVehicle:onLoad(savegame)
   end
 
   self.spec_enterable:setIsTabbable(not spec.state[spec.uniqueUserId])
+  if spec.state[spec.uniqueUserId] then
+    spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
+  end
   spec.registrationKey = g_parkVehicleSystem:registerInstance(self)
 end
 
@@ -113,6 +118,18 @@ function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
       self:setParkVehicleState(newValue)
       spec.inputPressed = false
     end
+
+    -- Auto-unpark: a parked vehicle that moves more than AUTO_UNPARK_DISTANCE
+    -- from where it was parked gets unparked automatically, regardless of what
+    -- moved it (player driving it, AI, being towed, ...).
+    if g_parkVehicleSystem.autoUnparkEnabled and self:getParkVehicleState() then
+      local x, y, z = localToWorld(self.rootNode, 0, 0, 0)
+      local dx, dy, dz = x - spec.parkAnchorX, y - spec.parkAnchorY, z - spec.parkAnchorZ
+      local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+      if distance >= ParkVehicle.AUTO_UNPARK_DISTANCE then
+        self:setParkVehicleState(false)
+      end
+    end
   end
 end
 
@@ -121,6 +138,9 @@ function ParkVehicle:setParkVehicleState(newValue)
   local spec = self.spec_parkvehicle
   self.spec_enterable:setIsTabbable(not newValue)
   spec.state[spec.uniqueUserId] = newValue
+  if newValue then
+    spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
+  end
   self:raiseDirtyFlags(spec.dirtyFlag)
 end
 
@@ -186,6 +206,9 @@ function ParkVehicle:onReadStream(streamId, connection)
     state[id] = value
     if id == spec.uniqueUserId then
       self.spec_enterable:setIsTabbable(not value)
+      if value then
+        spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
+      end
     end
     i = i + 1
   end
@@ -210,6 +233,9 @@ function ParkVehicle:onReadUpdateStream(streamId, timestamp, connection)
       local value = streamReadBool(streamId)
       if id == spec.uniqueUserId then
         self.spec_enterable:setIsTabbable(not value)
+        if value then
+          spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
+        end
       end
       spec.state[id] = value
     end
@@ -251,6 +277,21 @@ function ParkVehicle:onRegisterActionEvents(isActiveForInput)
       )
 
       g_inputBinding:setActionEventTextPriority(unparkAllEventId, GS_PRIO_VERY_LOW)
+
+      local _, cycleParkedEventId =
+      self:addActionEvent(
+          spec.actionEvents,
+          "PARKVEHICLE_CYCLE_PARKED",
+          self,
+          ParkVehicle.actionEventCycleParked,
+          false,
+          true,
+          false,
+          true,
+          nil
+      )
+
+      g_inputBinding:setActionEventTextPriority(cycleParkedEventId, GS_PRIO_VERY_LOW)
     end
   end
 end
@@ -262,6 +303,10 @@ end
 function ParkVehicle.actionEventParkVehicle(self, actionName, inputValue, callbackState, isAnalog)
   local spec = self.spec_parkvehicle
   spec.inputPressed = true
+end
+
+function ParkVehicle.actionEventCycleParked(self, actionName, inputValue, callbackState, isAnalog)
+  g_parkVehicleSystem:cycleParkedVehicles()
 end
 
 function ParkVehicle:saveToXMLFile(xmlFile, path)

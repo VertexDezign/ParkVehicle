@@ -146,7 +146,7 @@ end
 ---@return boolean
 function ParkVehicle:getParkVehicleState()
   local spec = self.spec_parkvehicle
-  return spec.state[spec.uniqueUserId]
+  return spec.state[spec.uniqueUserId] == true
 end
 
 function ParkVehicle:parkVehicleRender()
@@ -230,6 +230,12 @@ function ParkVehicle:onReadStream(streamId, connection)
     i = i + 1
   end
   spec.state = state
+  -- The server's table may not contain an entry for the local user (e.g. a
+  -- vehicle this player never parked). Seed it like onLoad does, so the local
+  -- state is always a valid bool and never gets written back as nil.
+  if spec.state[spec.uniqueUserId] == nil then
+    spec.state[spec.uniqueUserId] = false
+  end
 end
 
 function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
@@ -241,7 +247,7 @@ function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
     end
     if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlag) ~= 0) then
       streamWriteString(streamId, spec.uniqueUserId)
-      streamWriteBool(streamId, spec.state[spec.uniqueUserId])
+      streamWriteBool(streamId, spec.state[spec.uniqueUserId] == true)
     end
   end
 end

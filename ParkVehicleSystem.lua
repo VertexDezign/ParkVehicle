@@ -8,13 +8,6 @@
 ---@field counter integer Increased if an instance is registered, used as key within the table
 ParkVehicleSystem = {}
 
--- Vehicle types which should never receive the parkVehicle specialization,
--- because the base game already fixes their tabbable state on purpose
--- (e.g. the Kaercher HDS 9/18-4 M car wash, type="highPressureWasher").
-ParkVehicleSystem.EXCLUDED_TYPES = {
-    ["highPressureWasher"] = true,
-}
-
 local ParkVehicleSystem_mt = Class(ParkVehicleSystem)
 
 ---
@@ -38,11 +31,15 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     self.controlledVehicle = nil
 
     self.autoUnparkEnabled = true
+    self.uniqueUserId = nil
     self:loadSettings()
 
     return self
 end
 
+--- Single owner of modSettings/parkVehicle.xml: both the per-installation
+--- uniqueUserId and the autoUnparkEnabled preference live in this one file,
+--- read/written only from here (ParkVehicle.lua just asks for the values).
 function ParkVehicleSystem:getSettingsFilePath()
     return getUserProfileAppPath() .. "modSettings/parkVehicle.xml"
 end
@@ -57,10 +54,11 @@ function ParkVehicleSystem:loadSettings()
         return
     end
 
-    local xml = loadXMLFile("ParkVehicleSettings", filePath)
+    local xml = loadXMLFile("ParkVehicle", filePath)
     if hasXMLProperty(xml, "ParkVehicle#autoUnparkEnabled") then
         self.autoUnparkEnabled = Utils.getNoNil(getXMLBool(xml, "ParkVehicle#autoUnparkEnabled"), true)
     end
+    self.uniqueUserId = getXMLString(xml, "ParkVehicle#uniqueUserId")
     delete(xml)
 end
 
@@ -72,13 +70,16 @@ function ParkVehicleSystem:saveSettings()
     local filePath = self:getSettingsFilePath()
     local xml
     if fileExists(filePath) then
-        xml = loadXMLFile("ParkVehicleSettings", filePath)
+        xml = loadXMLFile("ParkVehicle", filePath)
     else
         createFolder(getUserProfileAppPath() .. "modSettings")
-        xml = createXMLFile("ParkVehicleSettings", filePath, "ParkVehicle")
+        xml = createXMLFile("ParkVehicle", filePath, "ParkVehicle")
     end
 
     setXMLBool(xml, "ParkVehicle#autoUnparkEnabled", self.autoUnparkEnabled)
+    if self.uniqueUserId ~= nil then
+        setXMLString(xml, "ParkVehicle#uniqueUserId", self.uniqueUserId)
+    end
     saveXMLFile(xml)
     delete(xml)
 end
@@ -87,6 +88,45 @@ end
 function ParkVehicleSystem:setAutoUnparkEnabled(enabled)
     self.autoUnparkEnabled = enabled
     self:saveSettings()
+end
+
+--- Per-player id used to key each vehicle's parked state, so multiple
+--- players in the same MP session each have their own independent parking
+--- preference for the same vehicle. Generated once and persisted; memoized
+--- here so only the first vehicle that needs it triggers any file I/O.
+---@return string
+function ParkVehicleSystem:getUniqueUserId()
+    if self.uniqueUserId == nil then
+        if g_dedicatedServerInfo ~= nil then
+            self.uniqueUserId = "dedi"
+        else
+            self.uniqueUserId = g_currentMission.playerNickname or ParkVehicleSystem.randomString(25)
+            self:saveSettings()
+        end
+    end
+    return self.uniqueUserId
+end
+
+function ParkVehicleSystem.randomString(length)
+    local charset = {} -- [0-9a-zA-Z]
+    for c = 48, 57 do
+        table.insert(charset, string.char(c))
+    end
+    for c = 65, 90 do
+        table.insert(charset, string.char(c))
+    end
+    for c = 97, 122 do
+        table.insert(charset, string.char(c))
+    end
+
+    local function randomString(len)
+        if not len or len <= 0 then
+            return ""
+        end
+        return randomString(len - 1) .. charset[math.random(1, #charset)]
+    end
+
+    return randomString(length)
 end
 
 function ParkVehicleSystem:onMissionLoaded(mission)
@@ -115,8 +155,7 @@ function ParkVehicleSystem:installSpecialization(typeManager, specManager)
     local modified = 0
     for typeName, typeEntry in pairs(typeManager:getTypes()) do
         totalCount = totalCount + 1
-        if not ParkVehicleSystem.EXCLUDED_TYPES[typeName] and
-            SpecializationUtil.hasSpecialization(Enterable, typeEntry.specializations) and
+        if SpecializationUtil.hasSpecialization(Enterable, typeEntry.specializations) and
             not SpecializationUtil.hasSpecialization(Rideable, typeEntry.specializations) and
             not SpecializationUtil.hasSpecialization(ParkVehicle, typeEntry.specializations) then
             typeManager:addSpecialization(typeName, self.modName .. ".parkVehicle")

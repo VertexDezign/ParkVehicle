@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="94">
+<modDesc descVersion="110">
   <author>VertexDezign</author>
-  <version>1.1.0.0</version>
+  <version>0.0.0.0-dev</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion Für Fahrzeuge</de>
@@ -18,9 +18,13 @@ The state is saved in single player and in multiplayer.
 Github-link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.0.0:
 * Added: Auto-unpark a vehicle once it has moved a few meters (optional, toggle in General Settings)
 * Added: Cycle through parked vehicles with Ctrl+Shift+Tab, bypassing the normal Tab restriction
 * Fixed: Vehicles the game already makes non-tabbable on purpose (e.g. car washes) are no longer forced into the Tab cycle
+1.0.1.0:
+* Fixed: renderOverlay is only allowed in 'draw' callbacks.
+* Added: Turkish translation
 ]]>
     </en>
     <de>
@@ -33,9 +37,13 @@ Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.0.0:
 * Hinzugefügt: Fahrzeug wird automatisch entparkt, sobald es sich einige Meter bewegt hat (optional, umschaltbar in den allgemeinen Einstellungen)
 * Hinzugefügt: Mit Strg+Umschalt+Tab durch geparkte Fahrzeuge wechseln, umgeht die normale Tab-Einschränkung
 * Behoben: Fahrzeuge, die das Spiel bereits absichtlich nicht tab-fähig macht (z. B. Waschanlagen), werden nicht mehr fälschlicherweise in den Tab-Zyklus gezwungen
+1.0.1.0:
+* Behoben: renderOverlay is only allowed in 'draw' callbacks.
+* Hinzugefügt: Türkische übersetzung
 ]]>
     </de>
     <tr>
@@ -48,9 +56,13 @@ Durum tek oyunculuda ve çok oyunculuda kaydedilir.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Değişiklik günlüğü:
+1.1.0.0:
 * Eklendi: Bir araç birkaç metre hareket ettiğinde otomatik olarak parktan çıkarılır (isteğe bağlı, Genel Ayarlar'da açılıp kapatılabilir)
 * Eklendi: Ctrl+Shift+Tab ile park edilmiş araçlar arasında geçiş yapın, normal Tab kısıtlamasını atlar
 * Düzeltildi: Oyunun zaten kasıtlı olarak sekmelenemez yaptığı araçlar (örneğin yıkama istasyonları) artık yanlışlıkla Tab döngüsüne zorlanmıyor
+1.0.1.0:
+* Düzeltildi: renderOverlay is only allowed in 'draw' callbacks.
+* Eklendi: Türkçe çeviri
 ]]>
     </tr>
   </description>

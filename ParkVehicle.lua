@@ -40,31 +40,20 @@ function ParkVehicle.registerEventListeners(vehicleType)
 end
 
 function ParkVehicle:onLoad(savegame)
+  -- Vehicles the base game already made permanently non-tabbable on purpose
+  -- (e.g. car washes, fixed/viewing-only enterables) are left alone entirely -
+  -- this mod never manages them. self.spec_enterable:getIsTabbable() at this
+  -- point still reflects the vehicle's own XML-configured default, since the
+  -- savegame-persisted value (which could be our own previous setIsTabbable
+  -- call) is only restored later, in Enterable:onPostLoad.
+  if not self.spec_enterable:getIsTabbable() then
+    return
+  end
+
   self.spec_parkvehicle = {}
   local spec = self.spec_parkvehicle
 
-  if g_dedicatedServerInfo == nil then
-    local modSettingsDir = getUserProfileAppPath() .. "modSettings"
-    local xmlFile = modSettingsDir .. "/parkVehicle.xml"
-    local id = g_currentMission.playerNickname
-    if not fileExists(xmlFile) then
-      createFolder(modSettingsDir)
-      local xml = createXMLFile("ParkVehicle", xmlFile, "ParkVehicle")
-      if id == nil then
-        id = ParkVehicle.randomString(25)
-      end
-      setXMLString(xml, "ParkVehicle#uniqueUserId", id)
-      saveXMLFile(xml)
-      delete(xml)
-    else
-      local xml = loadXMLFile("ParkVehicle", xmlFile)
-      id = getXMLString(xml, "ParkVehicle#uniqueUserId")
-      delete(xml)
-    end
-    spec.uniqueUserId = id
-  else
-    spec.uniqueUserId = "dedi"
-  end
+  spec.uniqueUserId = g_parkVehicleSystem:getUniqueUserId()
 
   spec.inputPressed = false
   spec.registrationKey = nil
@@ -74,6 +63,7 @@ function ParkVehicle:onLoad(savegame)
   spec.dirtyFlag = self:getNextDirtyFlag()
 
   spec.state = {}
+  spec.parkAnchorSet = false
   spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = 0, 0, 0
 
   local isEmpty = true
@@ -104,15 +94,16 @@ function ParkVehicle:onLoad(savegame)
   end
 
   self.spec_enterable:setIsTabbable(not spec.state[spec.uniqueUserId])
-  if spec.state[spec.uniqueUserId] then
-    spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
-  end
   spec.registrationKey = g_parkVehicleSystem:registerInstance(self)
 end
 
 function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
+  local spec = self.spec_parkvehicle
+  if spec == nil then
+    return
+  end
+
   if self.isClient then
-    local spec = self.spec_parkvehicle
     if spec.inputPressed then
       local newValue = not self:getParkVehicleState()
       self:setParkVehicleState(newValue)
@@ -121,14 +112,24 @@ function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
 
     -- Auto-unpark: a parked vehicle that moves more than AUTO_UNPARK_DISTANCE
     -- from where it was parked gets unparked automatically, regardless of what
-    -- moved it (player driving it, AI, being towed, ...).
+    -- moved it (player driving it, AI, being towed, ...). The anchor is only
+    -- ever captured here, lazily, on the first update tick after a vehicle
+    -- becomes parked - never during onLoad/network sync, where the vehicle's
+    -- node position isn't guaranteed to be settled yet (loading is async).
     if g_parkVehicleSystem.autoUnparkEnabled and self:getParkVehicleState() then
-      local x, y, z = localToWorld(self.rootNode, 0, 0, 0)
-      local dx, dy, dz = x - spec.parkAnchorX, y - spec.parkAnchorY, z - spec.parkAnchorZ
-      local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
-      if distance >= ParkVehicle.AUTO_UNPARK_DISTANCE then
-        self:setParkVehicleState(false)
+      if not spec.parkAnchorSet then
+        spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
+        spec.parkAnchorSet = true
+      else
+        local x, y, z = localToWorld(self.rootNode, 0, 0, 0)
+        local dx, dy, dz = x - spec.parkAnchorX, y - spec.parkAnchorY, z - spec.parkAnchorZ
+        local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+        if distance >= ParkVehicle.AUTO_UNPARK_DISTANCE then
+          self:setParkVehicleState(false)
+        end
       end
+    else
+      spec.parkAnchorSet = false
     end
   end
 end
@@ -138,9 +139,7 @@ function ParkVehicle:setParkVehicleState(newValue)
   local spec = self.spec_parkvehicle
   self.spec_enterable:setIsTabbable(not newValue)
   spec.state[spec.uniqueUserId] = newValue
-  if newValue then
-    spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
-  end
+  spec.parkAnchorSet = false
   self:raiseDirtyFlags(spec.dirtyFlag)
 end
 
@@ -151,8 +150,12 @@ function ParkVehicle:getParkVehicleState()
 end
 
 function ParkVehicle:parkVehicleRender()
+  local spec = self.spec_parkvehicle
+  if spec == nil then
+    return
+  end
+
   if self.isClient and self:getIsActive() then
-    local spec = self.spec_parkvehicle
     local uiScale = g_gameSettings:getValue("uiScale")
     local speedMeter = g_currentMission.hud.speedMeter
 
@@ -181,6 +184,11 @@ end
 -- @param integer connection connection
 function ParkVehicle:onWriteStream(streamId, connection)
   local spec = self.spec_parkvehicle
+  if spec == nil then
+    streamWriteInt32(streamId, 0)
+    return
+  end
+
   local count = 0
   for k in pairs(spec.state) do
     count = count + 1
@@ -197,8 +205,19 @@ end
 -- @param integer connection connection
 function ParkVehicle:onReadStream(streamId, connection)
   local spec = self.spec_parkvehicle
-  local state = {}
   local count = streamReadInt32(streamId)
+
+  if spec == nil then
+    -- Not a managed vehicle - still have to consume whatever the server
+    -- wrote so the stream stays in sync for whatever reads after this.
+    for i = 1, count do
+      streamReadString(streamId)
+      streamReadBool(streamId)
+    end
+    return
+  end
+
+  local state = {}
   local i = 0
   while i < count do
     local id = streamReadString(streamId)
@@ -206,9 +225,7 @@ function ParkVehicle:onReadStream(streamId, connection)
     state[id] = value
     if id == spec.uniqueUserId then
       self.spec_enterable:setIsTabbable(not value)
-      if value then
-        spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
-      end
+      spec.parkAnchorSet = false
     end
     i = i + 1
   end
@@ -218,6 +235,10 @@ end
 function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
   if connection:getIsServer() then
     local spec = self.spec_parkvehicle
+    if spec == nil then
+      streamWriteBool(streamId, false)
+      return
+    end
     if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlag) ~= 0) then
       streamWriteString(streamId, spec.uniqueUserId)
       streamWriteBool(streamId, spec.state[spec.uniqueUserId])
@@ -233,9 +254,7 @@ function ParkVehicle:onReadUpdateStream(streamId, timestamp, connection)
       local value = streamReadBool(streamId)
       if id == spec.uniqueUserId then
         self.spec_enterable:setIsTabbable(not value)
-        if value then
-          spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
-        end
+        spec.parkAnchorSet = false
       end
       spec.state[id] = value
     end
@@ -243,8 +262,12 @@ function ParkVehicle:onReadUpdateStream(streamId, timestamp, connection)
 end
 
 function ParkVehicle:onRegisterActionEvents(isActiveForInput)
+  local spec = self.spec_parkvehicle
+  if spec == nil then
+    return
+  end
+
   if self.isClient then
-    local spec = self.spec_parkvehicle
     self:clearActionEventsTable(spec.actionEvents)
 
     if self:getIsActiveForInput(true) then
@@ -311,32 +334,14 @@ end
 
 function ParkVehicle:saveToXMLFile(xmlFile, path)
   local spec = self.spec_parkvehicle
+  if spec == nil then
+    return
+  end
+
   local i = 0
   for id, value in pairs(spec.state) do
     setXMLString(xmlFile.handle, string.format("%s.player(%d)#id", path, i), id)
     setXMLBool(xmlFile.handle, string.format("%s.player(%d)#isParked", path, i), value)
     i = i + 1
   end
-end
-
-function ParkVehicle.randomString(length)
-  local charset = {} -- [0-9a-zA-Z]
-  for c = 48, 57 do
-    table.insert(charset, string.char(c))
-  end
-  for c = 65, 90 do
-    table.insert(charset, string.char(c))
-  end
-  for c = 97, 122 do
-    table.insert(charset, string.char(c))
-  end
-
-  local function randomString(length)
-    if not length or length <= 0 then
-      return ""
-    end
-    return randomString(length - 1) .. charset[math.random(1, #charset)]
-  end
-
-  return randomString(length)
 end

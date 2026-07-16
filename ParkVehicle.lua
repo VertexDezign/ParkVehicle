@@ -89,7 +89,11 @@ function ParkVehicle:onLoad(savegame)
     end
   end
 
-  if isEmpty or spec.state[spec.uniqueUserId] == nil then
+  -- A dedicated server is not a player of its own, so seeding an entry for its
+  -- id would only add one dead key per vehicle to the savegame. Unlike at mod
+  -- load time, g_dedicatedServer is reliable here: it is created during startup,
+  -- long before any vehicle loads.
+  if g_dedicatedServer == nil and (isEmpty or spec.state[spec.uniqueUserId] == nil) then
     spec.state[spec.uniqueUserId] = false
   end
 

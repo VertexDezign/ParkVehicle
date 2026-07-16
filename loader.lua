@@ -33,9 +33,7 @@ end
 local function init()
     g_parkVehicleSystem = ParkVehicleSystem:new(modName, directory, g_inputBinding, false)
 
-    if g_dedicatedServerInfo == nil then
-        ParkVehicleSettingsGui.install()
-    end
+    ParkVehicleSettingsGui.install()
 
     -- hook into late load
     Mission00.loadMission00Finished = Utils.appendedFunction(Mission00.loadMission00Finished, loadedMission)

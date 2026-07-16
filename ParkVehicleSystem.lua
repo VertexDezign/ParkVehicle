@@ -32,23 +32,19 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
 
     self.autoUnparkEnabled = true
     self.uniqueUserId = nil
+    self.uniqueUserIdResolved = false
     self:loadSettings()
 
     return self
 end
 
---- Single owner of modSettings/parkVehicle.xml: both the per-installation
---- uniqueUserId and the autoUnparkEnabled preference live in this one file,
---- read/written only from here (ParkVehicle.lua just asks for the values).
+--- Single owner of modSettings/parkVehicle.xml. Only autoUnparkEnabled is
+--- written; uniqueUserId is read-only legacy state (see getUniqueUserId).
 function ParkVehicleSystem:getSettingsFilePath()
     return getUserProfileAppPath() .. "modSettings/parkVehicle.xml"
 end
 
 function ParkVehicleSystem:loadSettings()
-    if g_dedicatedServerInfo ~= nil then
-        return
-    end
-
     local filePath = self:getSettingsFilePath()
     if not fileExists(filePath) then
         return
@@ -63,10 +59,6 @@ function ParkVehicleSystem:loadSettings()
 end
 
 function ParkVehicleSystem:saveSettings()
-    if g_dedicatedServerInfo ~= nil then
-        return
-    end
-
     local filePath = self:getSettingsFilePath()
     local xml
     if fileExists(filePath) then
@@ -76,10 +68,10 @@ function ParkVehicleSystem:saveSettings()
         xml = createXMLFile("ParkVehicle", filePath, "ParkVehicle")
     end
 
+    -- uniqueUserId is deliberately not written here. Files that already carry one
+    -- keep it, because the existing file is loaded and re-saved rather than
+    -- rebuilt, and fresh installs should not get one in the first place.
     setXMLBool(xml, "ParkVehicle#autoUnparkEnabled", self.autoUnparkEnabled)
-    if self.uniqueUserId ~= nil then
-        setXMLString(xml, "ParkVehicle#uniqueUserId", self.uniqueUserId)
-    end
     saveXMLFile(xml)
     delete(xml)
 end
@@ -92,41 +84,27 @@ end
 
 --- Per-player id used to key each vehicle's parked state, so multiple
 --- players in the same MP session each have their own independent parking
---- preference for the same vehicle. Generated once and persisted; memoized
---- here so only the first vehicle that needs it triggers any file I/O.
+--- preference for the same vehicle.
+---
+--- Installs from before 1.1.0.0 carry an id (the player nickname at the time)
+--- in modSettings/parkVehicle.xml. Keep honouring it, otherwise their already
+--- saved parked states become unreachable. Everyone else gets the engine's own
+--- per-installation id, which is stable across nickname changes and is what the
+--- base game itself keys farm membership on.
+---
+--- A dedicated server resolves an id the same way as anyone else. It never parks
+--- anything itself, so its id is inert and needs no special case.
 ---@return string
 function ParkVehicleSystem:getUniqueUserId()
-    if self.uniqueUserId == nil then
-        if g_dedicatedServerInfo ~= nil then
-            self.uniqueUserId = "dedi"
-        else
-            self.uniqueUserId = g_currentMission.playerNickname or ParkVehicleSystem.randomString(25)
-            self:saveSettings()
-        end
+    if not self.uniqueUserIdResolved then
+        self.uniqueUserIdResolved = true
+
+        local legacyId = self.uniqueUserId
+        -- bare getUniqueUserId() is the global engine function, not this method
+        local gameId = getUniqueUserId()
+        self.uniqueUserId = legacyId or gameId
     end
     return self.uniqueUserId
-end
-
-function ParkVehicleSystem.randomString(length)
-    local charset = {} -- [0-9a-zA-Z]
-    for c = 48, 57 do
-        table.insert(charset, string.char(c))
-    end
-    for c = 65, 90 do
-        table.insert(charset, string.char(c))
-    end
-    for c = 97, 122 do
-        table.insert(charset, string.char(c))
-    end
-
-    local function randomString(len)
-        if not len or len <= 0 then
-            return ""
-        end
-        return randomString(len - 1) .. charset[math.random(1, #charset)]
-    end
-
-    return randomString(length)
 end
 
 function ParkVehicleSystem:onMissionLoaded(mission)

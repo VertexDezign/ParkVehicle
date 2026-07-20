@@ -166,8 +166,8 @@ function ParkVehicle:parkVehicleRender()
     local iconWidth = 0.011 * uiScale
     local iconHeight = iconWidth * g_screenAspectRatio
 
-    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5)
-    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4)
+    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5) + g_parkVehicleSystem.overlayOffsetX * g_pixelSizeX
+    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4) + g_parkVehicleSystem.overlayOffsetY * g_pixelSizeY
 
     renderOverlay(spec.icon, startX, startY, iconWidth, iconHeight)
     if spec.state[spec.uniqueUserId] then

@@ -8,6 +8,12 @@
 ---@field counter integer Increased if an instance is registered, used as key within the table
 ParkVehicleSystem = {}
 
+-- Sanity bounds (in screen pixels) clamping what the settings UI's free-text
+-- overlay X/Y position fields will accept, wide enough to place the icon
+-- anywhere on screen while still rejecting garbage/typo input.
+ParkVehicleSystem.OVERLAY_OFFSET_MIN = -1000
+ParkVehicleSystem.OVERLAY_OFFSET_MAX = 1000
+
 local ParkVehicleSystem_mt = Class(ParkVehicleSystem)
 
 ---
@@ -31,6 +37,8 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     self.controlledVehicle = nil
 
     self.autoUnparkEnabled = true
+    self.overlayOffsetX = 0
+    self.overlayOffsetY = 0
     self.uniqueUserId = nil
     self.uniqueUserIdResolved = false
     self:loadSettings()
@@ -38,8 +46,8 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     return self
 end
 
---- Single owner of modSettings/parkVehicle.xml. Only autoUnparkEnabled is
---- written; uniqueUserId is read-only legacy state (see getUniqueUserId).
+--- Single owner of modSettings/parkVehicle.xml. autoUnparkEnabled and the overlay
+--- offsets are written; uniqueUserId is read-only legacy state (see getUniqueUserId).
 function ParkVehicleSystem:getSettingsFilePath()
     return getUserProfileAppPath() .. "modSettings/parkVehicle.xml"
 end
@@ -54,8 +62,20 @@ function ParkVehicleSystem:loadSettings()
     if hasXMLProperty(xml, "ParkVehicle#autoUnparkEnabled") then
         self.autoUnparkEnabled = Utils.getNoNil(getXMLBool(xml, "ParkVehicle#autoUnparkEnabled"), true)
     end
+    if hasXMLProperty(xml, "ParkVehicle#overlayOffsetX") then
+        self.overlayOffsetX = ParkVehicleSystem.clampOverlayOffset(Utils.getNoNil(getXMLInt(xml, "ParkVehicle#overlayOffsetX"), 0))
+    end
+    if hasXMLProperty(xml, "ParkVehicle#overlayOffsetY") then
+        self.overlayOffsetY = ParkVehicleSystem.clampOverlayOffset(Utils.getNoNil(getXMLInt(xml, "ParkVehicle#overlayOffsetY"), 0))
+    end
     self.uniqueUserId = getXMLString(xml, "ParkVehicle#uniqueUserId")
     delete(xml)
+end
+
+---@param value integer
+---@return integer value clamped to [OVERLAY_OFFSET_MIN, OVERLAY_OFFSET_MAX]
+function ParkVehicleSystem.clampOverlayOffset(value)
+    return math.max(ParkVehicleSystem.OVERLAY_OFFSET_MIN, math.min(ParkVehicleSystem.OVERLAY_OFFSET_MAX, value))
 end
 
 function ParkVehicleSystem:saveSettings()
@@ -72,6 +92,8 @@ function ParkVehicleSystem:saveSettings()
     -- keep it, because the existing file is loaded and re-saved rather than
     -- rebuilt, and fresh installs should not get one in the first place.
     setXMLBool(xml, "ParkVehicle#autoUnparkEnabled", self.autoUnparkEnabled)
+    setXMLInt(xml, "ParkVehicle#overlayOffsetX", self.overlayOffsetX)
+    setXMLInt(xml, "ParkVehicle#overlayOffsetY", self.overlayOffsetY)
     saveXMLFile(xml)
     delete(xml)
 end
@@ -79,6 +101,18 @@ end
 ---@param enabled boolean
 function ParkVehicleSystem:setAutoUnparkEnabled(enabled)
     self.autoUnparkEnabled = enabled
+    self:saveSettings()
+end
+
+---@param offsetPx integer pixels to shift the overlay horizontally from its default position
+function ParkVehicleSystem:setOverlayOffsetX(offsetPx)
+    self.overlayOffsetX = ParkVehicleSystem.clampOverlayOffset(offsetPx)
+    self:saveSettings()
+end
+
+---@param offsetPx integer pixels to shift the overlay vertically from its default position
+function ParkVehicleSystem:setOverlayOffsetY(offsetPx)
+    self.overlayOffsetY = ParkVehicleSystem.clampOverlayOffset(offsetPx)
     self:saveSettings()
 end
 

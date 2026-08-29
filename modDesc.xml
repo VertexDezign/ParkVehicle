@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="94">
+<modDesc descVersion="111">
   <author>VertexDezign</author>
-  <version>1.1.0.0</version>
+  <version>0.0.0.0-dev</version>
   <title>
     <en>Park Vehicle</en>
     <de>Parkfunktion Für Fahrzeuge</de>
@@ -18,9 +18,16 @@ The state is saved in single player and in multiplayer.
 Github-link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.0.0:
 * Added: Auto-unpark a vehicle once it has moved a few meters (optional, toggle in General Settings)
 * Added: Cycle through parked vehicles with Ctrl+Shift+Tab, bypassing the normal Tab restriction
+* Added: Reposition the park icon via horizontal/vertical offset fields in General Settings
 * Fixed: Vehicles the game already makes non-tabbable on purpose (e.g. car washes) are no longer forced into the Tab cycle
+* Fixed: The parked state is now tied to the game's own unique player id instead of your player name, so players sharing a name no longer share parked vehicles (existing installations keep their current id)
+* Fixed: A dedicated server no longer writes a redundant entry into every vehicle's saved parking state
+1.0.1.0:
+* Fixed: renderOverlay is only allowed in 'draw' callbacks.
+* Added: Turkish translation
 ]]>
     </en>
     <de>
@@ -33,9 +40,16 @@ Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.0.0:
 * Hinzugefügt: Fahrzeug wird automatisch entparkt, sobald es sich einige Meter bewegt hat (optional, umschaltbar in den allgemeinen Einstellungen)
 * Hinzugefügt: Mit Strg+Umschalt+Tab durch geparkte Fahrzeuge wechseln, umgeht die normale Tab-Einschränkung
+* Hinzugefügt: Park-Symbol über Felder für horizontale/vertikale Verschiebung in den allgemeinen Einstellungen neu positionieren
 * Behoben: Fahrzeuge, die das Spiel bereits absichtlich nicht tab-fähig macht (z. B. Waschanlagen), werden nicht mehr fälschlicherweise in den Tab-Zyklus gezwungen
+* Behoben: Der Parkstatus hängt jetzt an der spieleigenen eindeutigen Spieler-ID statt am Spielernamen, sodass Spieler mit gleichem Namen ihre geparkten Fahrzeuge nicht mehr teilen (bestehende Installationen behalten ihre bisherige ID)
+* Behoben: Ein Dedicated Server schreibt keinen überflüssigen Eintrag mehr in den gespeicherten Parkstatus jedes Fahrzeugs
+1.0.1.0:
+* Behoben: renderOverlay is only allowed in 'draw' callbacks.
+* Hinzugefügt: Türkische übersetzung
 ]]>
     </de>
     <tr>
@@ -48,9 +62,16 @@ Durum tek oyunculuda ve çok oyunculuda kaydedilir.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Değişiklik günlüğü:
+1.1.0.0:
 * Eklendi: Bir araç birkaç metre hareket ettiğinde otomatik olarak parktan çıkarılır (isteğe bağlı, Genel Ayarlar'da açılıp kapatılabilir)
 * Eklendi: Ctrl+Shift+Tab ile park edilmiş araçlar arasında geçiş yapın, normal Tab kısıtlamasını atlar
+* Eklendi: Genel Ayarlar'daki yatay/dikey kaydırma alanlarıyla park simgesini yeniden konumlandırın
 * Düzeltildi: Oyunun zaten kasıtlı olarak sekmelenemez yaptığı araçlar (örneğin yıkama istasyonları) artık yanlışlıkla Tab döngüsüne zorlanmıyor
+* Düzeltildi: Park durumu artık oyuncu adınız yerine oyunun kendi benzersiz oyuncu kimliğine bağlı, böylece aynı ada sahip oyuncular park edilmiş araçlarını paylaşmıyor (mevcut kurulumlar mevcut kimliklerini korur)
+* Düzeltildi: Dedicated sunucu artık her aracın kaydedilmiş park durumuna gereksiz bir girdi yazmıyor
+1.0.1.0:
+* Düzeltildi: renderOverlay is only allowed in 'draw' callbacks.
+* Eklendi: Türkçe çeviri
 ]]>
     </tr>
   </description>
@@ -105,6 +126,26 @@ Değişiklik günlüğü:
       <en>Automatically unparks a vehicle once it has moved a few meters, so you don't have to remember to do it yourself.</en>
       <de>Entparkt ein Fahrzeug automatisch, sobald es sich einige Meter bewegt hat, damit du es nicht selbst tun musst.</de>
 	  <tr>Bir araç birkaç metre hareket ettiğinde otomatik olarak parktan çıkarılır, böylece bunu kendiniz yapmayı hatırlamanıza gerek kalmaz.</tr>
+    </text>
+    <text name="PARKVEHICLE_OVERLAY_OFFSET_X_SETTING">
+      <en>Overlay horizontal position</en>
+      <de>Horizontale Position der Anzeige</de>
+	  <tr>Simgenin yatay konumu</tr>
+    </text>
+    <text name="PARKVEHICLE_OVERLAY_OFFSET_X_SETTING_TOOLTIP">
+      <en>Enter a number of pixels to shift the park icon from its default position next to the speedometer: negative moves it left, positive moves it right.</en>
+      <de>Gib eine Anzahl Pixel ein, um das Park-Symbol von seiner Standardposition neben dem Tacho zu verschieben: negativ verschiebt nach links, positiv nach rechts.</de>
+	  <tr>Park simgesini hız göstergesinin yanındaki varsayılan konumundan kaydırmak için piksel sayısı girin: negatif sola, pozitif sağa kaydırır.</tr>
+    </text>
+    <text name="PARKVEHICLE_OVERLAY_OFFSET_Y_SETTING">
+      <en>Overlay vertical position</en>
+      <de>Vertikale Position der Anzeige</de>
+	  <tr>Simgenin dikey konumu</tr>
+    </text>
+    <text name="PARKVEHICLE_OVERLAY_OFFSET_Y_SETTING_TOOLTIP">
+      <en>Enter a number of pixels to shift the park icon from its default position next to the speedometer: negative moves it down, positive moves it up.</en>
+      <de>Gib eine Anzahl Pixel ein, um das Park-Symbol von seiner Standardposition neben dem Tacho zu verschieben: negativ verschiebt nach unten, positiv nach oben.</de>
+	  <tr>Park simgesini hız göstergesinin yanındaki varsayılan konumundan kaydırmak için piksel sayısı girin: negatif aşağı, pozitif yukarı kaydırır.</tr>
     </text>
   </l10n>
 

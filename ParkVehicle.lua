@@ -40,16 +40,13 @@ function ParkVehicle.registerEventListeners(vehicleType)
 end
 
 function ParkVehicle:onLoad(savegame)
-  -- Vehicles the base game already made permanently non-tabbable on purpose
-  -- (e.g. car washes, fixed/viewing-only enterables) are left alone entirely -
-  -- this mod never manages them. self.spec_enterable:getIsTabbable() at this
-  -- point still reflects the vehicle's own XML-configured default, since the
-  -- savegame-persisted value (which could be our own previous setIsTabbable
-  -- call) is only restored later, in Enterable:onPostLoad.
-  if not self.spec_enterable:getIsTabbable() then
-    return
-  end
-
+  -- The spec table is created unconditionally, for every vehicle this
+  -- specialization is installed on. It carries the dirty flag and backs the
+  -- network stream layout, and both of those have to match bit for bit between
+  -- the client and the server. Deciding whether the table exists at all from a
+  -- value that can differ per machine is what used to desync the update stream:
+  -- a client that had a spec wrote id + value, the server that had none read
+  -- them back and indexed a nil spec.
   self.spec_parkvehicle = {}
   local spec = self.spec_parkvehicle
 
@@ -58,13 +55,30 @@ function ParkVehicle:onLoad(savegame)
   spec.inputPressed = false
   spec.registrationKey = nil
   spec.actionEvents = {}
-  spec.icon = createImageOverlay(ParkVehicle.modDir .. "icon.png")
-  spec.overlay = createImageOverlay(ParkVehicle.modDir .. "overlay.png")
   spec.dirtyFlag = self:getNextDirtyFlag()
 
   spec.state = {}
   spec.parkAnchorSet = false
   spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = 0, 0, 0
+
+  -- Vehicles the base game already made permanently non-tabbable on purpose
+  -- (e.g. car washes, fixed/viewing-only enterables) are left alone entirely -
+  -- this mod never manages them, it only keeps them stream-compatible.
+  --
+  -- Read the raw Enterable field rather than calling getIsTabbable(). The
+  -- question here is only "did this vehicle's own XML opt out of tabbing", and
+  -- the field answers exactly that: Enterable:onLoad has just filled it from
+  -- vehicle.enterable#isTabbable, and the savegame-persisted value (which could
+  -- be our own previous setIsTabbable call) is only restored later, in
+  -- Enterable:onPostLoad. getIsTabbable() answers a different, much broader
+  -- question, because anyone may overwrite it with a dynamic condition
+  spec.isManaged = self.spec_enterable.isTabbable ~= false
+  if not spec.isManaged then
+    return
+  end
+
+  spec.icon = createImageOverlay(ParkVehicle.modDir .. "icon.png")
+  spec.overlay = createImageOverlay(ParkVehicle.modDir .. "overlay.png")
 
   local isEmpty = true
   if savegame ~= nil then
@@ -89,7 +103,11 @@ function ParkVehicle:onLoad(savegame)
     end
   end
 
-  if isEmpty or spec.state[spec.uniqueUserId] == nil then
+  -- A dedicated server is not a player of its own, so seeding an entry for its
+  -- id would only add one dead key per vehicle to the savegame. Unlike at mod
+  -- load time, g_dedicatedServer is reliable here: it is created during startup,
+  -- long before any vehicle loads.
+  if g_dedicatedServer == nil and (isEmpty or spec.state[spec.uniqueUserId] == nil) then
     spec.state[spec.uniqueUserId] = false
   end
 
@@ -99,7 +117,7 @@ end
 
 function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
   local spec = self.spec_parkvehicle
-  if spec == nil then
+  if spec == nil or not spec.isManaged then
     return
   end
 
@@ -137,6 +155,10 @@ end
 ---@param newValue boolean
 function ParkVehicle:setParkVehicleState(newValue)
   local spec = self.spec_parkvehicle
+  if spec == nil or not spec.isManaged then
+    return
+  end
+
   self.spec_enterable:setIsTabbable(not newValue)
   spec.state[spec.uniqueUserId] = newValue
   spec.parkAnchorSet = false
@@ -146,12 +168,16 @@ end
 ---@return boolean
 function ParkVehicle:getParkVehicleState()
   local spec = self.spec_parkvehicle
-  return spec.state[spec.uniqueUserId]
+  if spec == nil or not spec.isManaged then
+    return false
+  end
+
+  return spec.state[spec.uniqueUserId] == true
 end
 
 function ParkVehicle:parkVehicleRender()
   local spec = self.spec_parkvehicle
-  if spec == nil then
+  if spec == nil or not spec.isManaged then
     return
   end
 
@@ -162,8 +188,8 @@ function ParkVehicle:parkVehicleRender()
     local iconWidth = 0.011 * uiScale
     local iconHeight = iconWidth * g_screenAspectRatio
 
-    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5)
-    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4)
+    local startX = speedMeter.x + speedMeter.aiIconOffsetX - (iconWidth * 1.5) + g_parkVehicleSystem.overlayOffsetX * g_pixelSizeX
+    local startY = speedMeter.y + speedMeter.aiIconOffsetY + (iconHeight / 4) + g_parkVehicleSystem.overlayOffsetY * g_pixelSizeY
 
     renderOverlay(spec.icon, startX, startY, iconWidth, iconHeight)
     if spec.state[spec.uniqueUserId] then
@@ -174,7 +200,9 @@ end
 
 function ParkVehicle:onDelete()
   local spec = self.spec_parkvehicle
-  if spec ~= nil then
+  -- Unmanaged vehicles never got registered, and unregistering a nil key would
+  -- raise "table index is nil".
+  if spec ~= nil and spec.registrationKey ~= nil then
     g_parkVehicleSystem:unregisterInstance(spec.registrationKey)
   end
 end
@@ -223,13 +251,19 @@ function ParkVehicle:onReadStream(streamId, connection)
     local id = streamReadString(streamId)
     local value = streamReadBool(streamId)
     state[id] = value
-    if id == spec.uniqueUserId then
+    if spec.isManaged and id == spec.uniqueUserId then
       self.spec_enterable:setIsTabbable(not value)
       spec.parkAnchorSet = false
     end
     i = i + 1
   end
   spec.state = state
+  -- The server's table may not contain an entry for the local user (e.g. a
+  -- vehicle this player never parked). Seed it like onLoad does, so the local
+  -- state is always a valid bool and never gets written back as nil.
+  if spec.isManaged and spec.state[spec.uniqueUserId] == nil then
+    spec.state[spec.uniqueUserId] = false
+  end
 end
 
 function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
@@ -241,7 +275,7 @@ function ParkVehicle:onWriteUpdateStream(streamId, connection, dirtyMask)
     end
     if streamWriteBool(streamId, bitAND(dirtyMask, spec.dirtyFlag) ~= 0) then
       streamWriteString(streamId, spec.uniqueUserId)
-      streamWriteBool(streamId, spec.state[spec.uniqueUserId])
+      streamWriteBool(streamId, spec.state[spec.uniqueUserId] == true)
     end
   end
 end
@@ -252,7 +286,12 @@ function ParkVehicle:onReadUpdateStream(streamId, timestamp, connection)
     if streamReadBool(streamId) then
       local id = streamReadString(streamId)
       local value = streamReadBool(streamId)
-      if id == spec.uniqueUserId then
+      -- The payload always has to be consumed, even for a vehicle this side
+      -- does not manage, so the rest of the stream stays aligned.
+      if spec == nil then
+        return
+      end
+      if spec.isManaged and id == spec.uniqueUserId then
         self.spec_enterable:setIsTabbable(not value)
         spec.parkAnchorSet = false
       end
@@ -263,7 +302,7 @@ end
 
 function ParkVehicle:onRegisterActionEvents(isActiveForInput)
   local spec = self.spec_parkvehicle
-  if spec == nil then
+  if spec == nil or not spec.isManaged then
     return
   end
 

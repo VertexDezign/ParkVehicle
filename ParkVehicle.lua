@@ -30,6 +30,7 @@ end
 
 function ParkVehicle.registerEventListeners(vehicleType)
   SpecializationUtil.registerEventListener(vehicleType, "onLoad", ParkVehicle)
+  SpecializationUtil.registerEventListener(vehicleType, "onPostLoad", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onUpdate", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", ParkVehicle)
   SpecializationUtil.registerEventListener(vehicleType, "onReadStream", ParkVehicle)
@@ -62,17 +63,20 @@ function ParkVehicle:onLoad(savegame)
   spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = 0, 0, 0
 
   -- Vehicles the base game already made permanently non-tabbable on purpose
-  -- (e.g. car washes, fixed/viewing-only enterables) are left alone entirely -
-  -- this mod never manages them, it only keeps them stream-compatible.
+  -- (e.g. car washes, conveyor belts, pressure washers) are left alone
+  -- entirely - this mod never manages them, it only keeps them
+  -- stream-compatible.
   --
-  -- Read the raw Enterable field rather than calling getIsTabbable(). The
-  -- question here is only "did this vehicle's own XML opt out of tabbing", and
-  -- the field answers exactly that: Enterable:onLoad has just filled it from
-  -- vehicle.enterable#isTabbable, and the savegame-persisted value (which could
-  -- be our own previous setIsTabbable call) is only restored later, in
-  -- Enterable:onPostLoad. getIsTabbable() answers a different, much broader
-  -- question, because anyone may overwrite it with a dynamic condition
-  spec.isManaged = self.spec_enterable.isTabbable ~= false
+  -- The question here is only "did this vehicle's own XML opt out of tabbing",
+  -- so read that XML, exactly like Enterable:onLoad does. Neither of the two
+  -- obvious alternatives answers it: getIsTabbable() answers a much broader
+  -- question, because anyone may overwrite it with a dynamic condition, and
+  -- the live spec_enterable.isTabbable field is not trustworthy either,
+  -- because Enterable:onPostLoad overwrites it with the savegame-persisted
+  -- value right after this runs - and in savegames played with ParkVehicle
+  -- <= 1.0.x that value is this mod's own setIsTabbable(true), which the old
+  -- version applied to every enterable vehicle indiscriminately.
+  spec.isManaged = self.xmlFile:getValue("vehicle.enterable#isTabbable", true)
   if not spec.isManaged then
     return
   end
@@ -111,8 +115,30 @@ function ParkVehicle:onLoad(savegame)
     spec.state[spec.uniqueUserId] = false
   end
 
-  self.spec_enterable:setIsTabbable(not spec.state[spec.uniqueUserId])
   spec.registrationKey = g_parkVehicleSystem:registerInstance(self)
+end
+
+-- The single authoritative point at which this mod owns enterable#isTabbable.
+-- It has to be here and not in onLoad, because Enterable:onPostLoad has just
+-- restored the flag from the savegame, clobbering anything onLoad decided.
+function ParkVehicle:onPostLoad(savegame)
+  local spec = self.spec_parkvehicle
+  if spec == nil then
+    return
+  end
+
+  if not spec.isManaged then
+    -- Repair savegames written by ParkVehicle <= 1.0.x. That version forced
+    -- every enterable vehicle tabbable, including the ones the base game marks
+    -- non-tabbable, and Enterable:saveToXMLFile persists the flag - so the
+    -- restore above drags car washes, conveyor belts and pressure washers back
+    -- into the Tab cycle. Worse, they are unmanaged here, so they get no park
+    -- action event either and Ctrl+T falls through to the chat binding.
+    -- Re-saving the savegame clears the stale entry for good.
+    self.spec_enterable:setIsTabbable(false)
+  else
+    self.spec_enterable:setIsTabbable(not spec.state[spec.uniqueUserId])
+  end
 end
 
 function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
@@ -263,6 +289,14 @@ function ParkVehicle:onReadStream(streamId, connection)
   -- state is always a valid bool and never gets written back as nil.
   if spec.isManaged and spec.state[spec.uniqueUserId] == nil then
     spec.state[spec.uniqueUserId] = false
+  end
+
+  -- Same repair as onPostLoad, for the client side: Enterable:onReadStream has
+  -- just taken the server's isTabbable, which is still true for non-tabbable
+  -- vehicles as long as the server runs on a savegame written by <= 1.0.x.
+  -- Undo it here so clients are correct even before the server re-saves.
+  if not spec.isManaged then
+    self.spec_enterable:setIsTabbable(false)
   end
 end
 

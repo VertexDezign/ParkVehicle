@@ -2,3 +2,4 @@
 /.idea/
 *.iml
 /.claude/
+.ai-sandbox.json

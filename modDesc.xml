@@ -18,6 +18,8 @@ The state is saved in single player and in multiplayer.
 Github-link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.2.0:
+* Fixed: Prepared for the removal of the game's deprecated getUniqueUserId() function. The id your parked states are saved under is now stored in modSettings/parkVehicle.xml, so they are kept
 1.1.1.0:
 * Fixed: Vehicles the game marks as non-tabbable (car washes, conveyor belts, pressure washers, ...) could still be tabbed into, and Ctrl+T had no effect on them, in worlds previously played with version 1.0.x. Such savegames are now repaired on load.
 1.1.0.0:
@@ -42,6 +44,8 @@ Der Status wird im Einzelspieler und im Multiplayer gespeichert.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Changelog:
+1.1.2.0:
+* Behoben: Vorbereitet auf das Entfernen der veralteten Spielfunktion getUniqueUserId(). Die ID, unter der geparkte Fahrzeuge gespeichert sind, wird jetzt in modSettings/parkVehicle.xml abgelegt, sodass sie erhalten bleiben
 1.1.1.0:
 * Behoben: Fahrzeuge, die das Spiel als nicht tab-fähig kennzeichnet (Waschanlagen, Förderbänder, Hochdruckreiniger, ...), konnten in Welten, die zuvor mit Version 1.0.x gespielt wurden, weiterhin angetabbt werden, und Strg + T hatte dort keine Wirkung. Solche Spielstände werden beim Laden repariert.
 1.1.0.0:
@@ -66,6 +70,8 @@ Durum tek oyunculuda ve çok oyunculuda kaydedilir.
 Github-Link: https://github.com/VertexDezign/ParkVehicle
 
 Değişiklik günlüğü:
+1.1.2.0:
+* Düzeltildi: Oyunun kullanımdan kaldırılan getUniqueUserId() fonksiyonunun kaldırılmasına hazırlık yapıldı. Park durumlarının kaydedildiği kimlik artık modSettings/parkVehicle.xml dosyasında saklanıyor, böylece korunuyorlar
 1.1.1.0:
 * Düzeltildi: Oyunun sekmelenemez olarak işaretlediği araçlara (yıkama istasyonları, konveyör bantlar, yüksek basınçlı yıkayıcılar, ...) daha önce 1.0.x sürümüyle oynanmış dünyalarda hâlâ sekme ile geçilebiliyordu ve Ctrl + T bu araçlarda etkisizdi. Bu tür kayıtlar yüklenirken onarılır.
 1.1.0.0:

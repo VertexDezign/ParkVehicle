@@ -46,8 +46,8 @@ function ParkVehicleSystem:new(modName, modDir, inputManager, debug)
     return self
 end
 
---- Single owner of modSettings/parkVehicle.xml. autoUnparkEnabled and the overlay
---- offsets are written; uniqueUserId is read-only legacy state (see getUniqueUserId).
+--- Single owner of modSettings/parkVehicle.xml, which holds autoUnparkEnabled,
+--- the overlay offsets and uniqueUserId (see getUniqueUserId).
 function ParkVehicleSystem:getSettingsFilePath()
     return getUserProfileAppPath() .. "modSettings/parkVehicle.xml"
 end
@@ -88,9 +88,9 @@ function ParkVehicleSystem:saveSettings()
         xml = createXMLFile("ParkVehicle", filePath, "ParkVehicle")
     end
 
-    -- uniqueUserId is deliberately not written here. Files that already carry one
-    -- keep it, because the existing file is loaded and re-saved rather than
-    -- rebuilt, and fresh installs should not get one in the first place.
+    if self.uniqueUserId ~= nil then
+        setXMLString(xml, "ParkVehicle#uniqueUserId", self.uniqueUserId)
+    end
     setXMLBool(xml, "ParkVehicle#autoUnparkEnabled", self.autoUnparkEnabled)
     setXMLInt(xml, "ParkVehicle#overlayOffsetX", self.overlayOffsetX)
     setXMLInt(xml, "ParkVehicle#overlayOffsetY", self.overlayOffsetY)
@@ -120,11 +120,16 @@ end
 --- players in the same MP session each have their own independent parking
 --- preference for the same vehicle.
 ---
---- Installs from before 1.1.0.0 carry an id (the player nickname at the time)
---- in modSettings/parkVehicle.xml. Keep honouring it, otherwise their already
---- saved parked states become unreachable. Everyone else gets the engine's own
---- per-installation id, which is stable across nickname changes and is what the
---- base game itself keys farm membership on.
+--- The id is owned by this mod and persisted in modSettings/parkVehicle.xml,
+--- because the game no longer offers mods a per-user id: the global
+--- getUniqueUserId() is deprecated for mods, and the in-mission equivalent
+--- (userManager + playerUserId) is not populated yet on a joining MP client
+--- when its vehicles are streamed in. The first run picks the id once:
+--- - installs from before 1.1.0.0 already carry one (the player nickname at
+---   the time) and keep it,
+--- - installs since then keyed their parked states on the engine's id, so it is
+---   copied over while the deprecated function still exists,
+--- - anyone else gets a random id.
 ---
 --- A dedicated server resolves an id the same way as anyone else. It never parks
 --- anything itself, so its id is inert and needs no special case.
@@ -133,12 +138,37 @@ function ParkVehicleSystem:getUniqueUserId()
     if not self.uniqueUserIdResolved then
         self.uniqueUserIdResolved = true
 
-        local legacyId = self.uniqueUserId
-        -- bare getUniqueUserId() is the global engine function, not this method
-        local gameId = getUniqueUserId()
-        self.uniqueUserId = legacyId or gameId
+        if string.isNilOrWhitespace(self.uniqueUserId) then
+            self.uniqueUserId = ParkVehicleSystem.getEngineUniqueUserId() or ParkVehicleSystem.generateUniqueUserId()
+            self:saveSettings()
+        end
     end
     return self.uniqueUserId
+end
+
+--- The engine's per-installation id, for migrating installs that already keyed
+--- parked states on it. Giants announced its removal for mods, so tolerate it
+--- being gone, replaced by a non-function, or failing.
+---@return string|nil
+function ParkVehicleSystem.getEngineUniqueUserId()
+    -- bare getUniqueUserId is the global engine function, not the method above
+    if type(getUniqueUserId) ~= "function" then
+        return nil
+    end
+    local ok, id = pcall(getUniqueUserId)
+    if ok and type(id) == "string" and not string.isNilOrWhitespace(id) then
+        return id
+    end
+    return nil
+end
+
+---@return string 32 random hex characters
+function ParkVehicleSystem.generateUniqueUserId()
+    local parts = {}
+    for i = 1, 4 do
+        parts[i] = string.format("%08x", math.random(0, 0x7FFFFFFF))
+    end
+    return table.concat(parts)
 end
 
 function ParkVehicleSystem:onMissionLoaded(mission)

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="113">
+<modDesc descVersion="114">
   <author>VertexDezign</author>
   <version>0.0.0.0-dev</version>
   <title>
@@ -20,6 +20,7 @@ Github-link: https://github.com/VertexDezign/ParkVehicle
 Changelog:
 1.1.2.0:
 * Fixed: Prepared for the removal of the game's deprecated getUniqueUserId() function. The id your parked states are saved under is now stored in modSettings/parkVehicle.xml, so they are kept
+* Fixed: Parked vehicles are no longer auto-unparked when another player moves them. Only driving the vehicle yourself (or the vehicle it is attached to) unparks it
 1.1.1.0:
 * Fixed: Vehicles the game marks as non-tabbable (car washes, conveyor belts, pressure washers, ...) could still be tabbed into, and Ctrl+T had no effect on them, in worlds previously played with version 1.0.x. Such savegames are now repaired on load.
 1.1.0.0:
@@ -46,6 +47,7 @@ Github-Link: https://github.com/VertexDezign/ParkVehicle
 Changelog:
 1.1.2.0:
 * Behoben: Vorbereitet auf das Entfernen der veralteten Spielfunktion getUniqueUserId(). Die ID, unter der geparkte Fahrzeuge gespeichert sind, wird jetzt in modSettings/parkVehicle.xml abgelegt, sodass sie erhalten bleiben
+* Behoben: Geparkte Fahrzeuge werden nicht mehr automatisch entparkt, wenn ein anderer Spieler sie bewegt. Nur wenn du das Fahrzeug selbst fährst (oder das Fahrzeug, an dem es angehängt ist), wird es entparkt
 1.1.1.0:
 * Behoben: Fahrzeuge, die das Spiel als nicht tab-fähig kennzeichnet (Waschanlagen, Förderbänder, Hochdruckreiniger, ...), konnten in Welten, die zuvor mit Version 1.0.x gespielt wurden, weiterhin angetabbt werden, und Strg + T hatte dort keine Wirkung. Solche Spielstände werden beim Laden repariert.
 1.1.0.0:
@@ -72,6 +74,7 @@ Github-Link: https://github.com/VertexDezign/ParkVehicle
 Değişiklik günlüğü:
 1.1.2.0:
 * Düzeltildi: Oyunun kullanımdan kaldırılan getUniqueUserId() fonksiyonunun kaldırılmasına hazırlık yapıldı. Park durumlarının kaydedildiği kimlik artık modSettings/parkVehicle.xml dosyasında saklanıyor, böylece korunuyorlar
+* Düzeltildi: Park edilmiş araçlar, başka bir oyuncu onları hareket ettirdiğinde artık otomatik olarak parktan çıkarılmıyor. Yalnızca aracı (veya bağlı olduğu aracı) kendiniz sürdüğünüzde parktan çıkarılır
 1.1.1.0:
 * Düzeltildi: Oyunun sekmelenemez olarak işaretlediği araçlara (yıkama istasyonları, konveyör bantlar, yüksek basınçlı yıkayıcılar, ...) daha önce 1.0.x sürümüyle oynanmış dünyalarda hâlâ sekme ile geçilebiliyordu ve Ctrl + T bu araçlarda etkisizdi. Bu tür kayıtlar yüklenirken onarılır.
 1.1.0.0:
@@ -135,9 +138,9 @@ Değişiklik günlüğü:
 	  <tr>Araçları otomatik parktan çıkar</tr>
     </text>
     <text name="PARKVEHICLE_AUTOUNPARK_SETTING_TOOLTIP">
-      <en>Automatically unparks a vehicle once it has moved a few meters, so you don't have to remember to do it yourself.</en>
-      <de>Entparkt ein Fahrzeug automatisch, sobald es sich einige Meter bewegt hat, damit du es nicht selbst tun musst.</de>
-	  <tr>Bir araç birkaç metre hareket ettiğinde otomatik olarak parktan çıkarılır, böylece bunu kendiniz yapmayı hatırlamanıza gerek kalmaz.</tr>
+      <en>Automatically unparks a vehicle once you have driven it a few meters, so you don't have to remember to do it yourself. Other players moving it does not unpark it.</en>
+      <de>Entparkt ein Fahrzeug automatisch, sobald du es einige Meter gefahren hast, damit du es nicht selbst tun musst. Bewegen es andere Spieler, bleibt es geparkt.</de>
+	  <tr>Bir aracı birkaç metre sürdüğünüzde otomatik olarak parktan çıkarılır, böylece bunu kendiniz yapmayı hatırlamanıza gerek kalmaz. Başka oyuncuların onu hareket ettirmesi aracı parktan çıkarmaz.</tr>
     </text>
     <text name="PARKVEHICLE_OVERLAY_OFFSET_X_SETTING">
       <en>Overlay horizontal position</en>

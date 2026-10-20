@@ -154,13 +154,21 @@ function ParkVehicle:onUpdate(dt, isActiveForInput, isSelected)
       spec.inputPressed = false
     end
 
-    -- Auto-unpark: a parked vehicle that moves more than AUTO_UNPARK_DISTANCE
-    -- from where it was parked gets unparked automatically, regardless of what
-    -- moved it (player driving it, AI, being towed, ...). The anchor is only
-    -- ever captured here, lazily, on the first update tick after a vehicle
-    -- becomes parked - never during onLoad/network sync, where the vehicle's
-    -- node position isn't guaranteed to be settled yet (loading is async).
-    if g_parkVehicleSystem.autoUnparkEnabled and self:getParkVehicleState() then
+    -- Auto-unpark: a parked vehicle that the local player moves more than
+    -- AUTO_UNPARK_DISTANCE gets unparked automatically. Only the local player's
+    -- own driving counts, either in the vehicle itself or in the vehicle it is
+    -- attached to. Parking is per player, so everyone else can still enter and
+    -- drive it, and them moving it must not unpark it for us.
+    --
+    -- The anchor is captured lazily, on the first update tick in which the
+    -- local player is driving it, and dropped as soon as they stop. So it is
+    -- never taken during onLoad/network sync, where the vehicle's node position
+    -- isn't guaranteed to be settled yet (loading is async), and whatever
+    -- others did with the vehicle in between does not count towards the
+    -- distance.
+    local rootVehicle = self.rootVehicle
+    local isDrivenLocally = rootVehicle.getIsEntered ~= nil and rootVehicle:getIsEntered()
+    if g_parkVehicleSystem.autoUnparkEnabled and isDrivenLocally and self:getParkVehicleState() then
       if not spec.parkAnchorSet then
         spec.parkAnchorX, spec.parkAnchorY, spec.parkAnchorZ = localToWorld(self.rootNode, 0, 0, 0)
         spec.parkAnchorSet = true
